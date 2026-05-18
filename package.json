@@ -1,0 +1,44 @@
+{
+  "name": "india-open-data-gis-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo scaffold for the India Open Data GIS Dashboard.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n frontend,backend -c cyan,green \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "start:frontend": "npm run start --workspace frontend",
+    "start:backend": "npm run start --workspace backend",
+    "build": "npm run build --workspaces --if-present",
+    "build:frontend": "npm run build --workspace frontend",
+    "build:backend": "npm run build --workspace backend",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:frontend": "npm run lint --workspace frontend",
+    "lint:backend": "npm run lint --workspace backend",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck:frontend": "npm run typecheck --workspace frontend",
+    "typecheck:backend": "npm run typecheck --workspace backend",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "format:frontend": "npm run format --workspace frontend",
+    "format:backend": "npm run format --workspace backend"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "next": "16.2.6",
+    "prettier": "^3.8.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "typescript": "6.0.3"
+  }
+}
