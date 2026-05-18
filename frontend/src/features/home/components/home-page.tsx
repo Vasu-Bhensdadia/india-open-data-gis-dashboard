@@ -1,4 +1,8 @@
+import Link from "next/link";
+
 import { AppShell } from "@/components/layout/app-shell";
+import { LandingHeader } from "@/components/layout/landing-header";
+import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site";
 
 const foundationItems = [
@@ -12,6 +16,7 @@ const workspaceItems = ["Open data catalog", "Analytics workspace", "Documentati
 export function HomePage() {
   return (
     <AppShell>
+      <LandingHeader />
       <section className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-12 lg:grid-cols-[1fr_480px] lg:items-center">
         <div className="max-w-3xl">
           <p className="mb-4 text-sm font-semibold text-emerald-700">Production scaffold</p>
@@ -53,20 +58,26 @@ function DashboardPreview() {
   return (
     <aside
       aria-label="Dashboard preview"
-      className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
+      className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">Workspace shell</p>
-          <p className="mt-1 text-sm text-zinc-600">Ready for data layers and analytics views.</p>
-        </div>
-        <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-          Ready
-        </span>
+      <div>
+        <p className="text-sm font-semibold text-zinc-950">Ready to explore</p>
+        <p className="mt-1 text-sm text-zinc-600">
+          Access the analytics dashboard with geospatial visualizations and data exploration tools.
+        </p>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700">
+          <Link href="/dashboard">Open Dashboard</Link>
+        </Button>
+        <Button asChild variant="outline" className="w-full">
+          <Link href="/">View Documentation</Link>
+        </Button>
       </div>
 
       <div
-        className="mt-5 aspect-[4/3] overflow-hidden rounded-lg border border-zinc-200 bg-neutral-100"
+        className="mt-6 aspect-[4/3] overflow-hidden rounded-lg border border-zinc-200 bg-neutral-100"
         aria-hidden="true"
       >
         <div className="grid h-full grid-cols-[1fr_120px]">
