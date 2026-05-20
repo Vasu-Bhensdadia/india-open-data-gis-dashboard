@@ -1,0 +1,19 @@
+# Dataset catalog for the India Open Data GIS project.
+# Add new dataset entries as individual resources are added or updated.
+
+india_parliamentary_constituencies:
+  id: india_parliamentary_constituencies
+  title: India Parliamentary Constituencies
+  source: datasets/raw/india
+  raw_format: shapefile
+  processed_formats:
+    - geojson
+    - simplified_geojson
+  license: TBD
+  provenance:
+    - description: Original constituency boundaries dataset for India.
+    - source_url: ""
+  version: 1.0
+  status: raw_available
+  notes: |
+    Use `scripts/data/workflows/shapefileToGeoJSONWorkflow.ts` to convert raw shapefile sources into canonical GeoJSON.

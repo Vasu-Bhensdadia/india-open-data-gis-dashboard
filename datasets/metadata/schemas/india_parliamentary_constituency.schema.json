@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "India Parliamentary Constituency GeoJSON Feature",
+  "type": "object",
+  "required": ["type", "features"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "FeatureCollection"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "properties", "geometry"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "pc_name": { "type": ["string", "null"] },
+              "pc_code": { "type": ["string", "null"] },
+              "state_name": { "type": ["string", "null"] }
+            },
+            "required": ["pc_name", "pc_code", "state_name"]
+          },
+          "geometry": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": { "type": "string" },
+              "coordinates": {}
+            },
+            "required": ["type", "coordinates"]
+          }
+        }
+      }
+    }
+  }
+}

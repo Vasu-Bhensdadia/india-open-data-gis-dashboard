@@ -1,0 +1,33 @@
+id: india_parliamentary_constituency
+name: India Parliamentary Constituency Boundaries
+description: "Parliamentary constituency boundary data for India, sourced from local shapefiles and initial GeoJSON staging files."
+raw_files:
+  - india_pc_2019.shp
+  - india_pc_2019.shx
+  - india_pc_2019.dbf
+  - india_pc_2019.prj
+  - india_pc_2019.cpg
+  - india_pc_2019.geojson
+license: "TBD"
+source_url: ""
+acquisition_date: "2026-05-20"
+geography:
+  country: India
+  administrative_level: national
+  feature_type: constituency
+fields:
+  - name: pc_name
+    description: Parliamentary constituency name
+  - name: pc_code
+    description: Parliamentary constituency code
+  - name: state_name
+    description: State or union territory name
+  - name: geometry
+    description: Constituency boundary geometry
+processing:
+  - stage: raw_ingest
+    description: Source shapefile ingestion to canonical GeoJSON.
+  - stage: normalize
+    description: Field normalization and geometry validation.
+  - stage: optimize
+    description: GeoJSON optimization and future simplification.
