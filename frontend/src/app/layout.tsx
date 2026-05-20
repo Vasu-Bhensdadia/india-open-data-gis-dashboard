@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { siteConfig } from "@/lib/site";
 import "@/styles/globals.css";
+import "leaflet/dist/leaflet.css";
 
 export const metadata: Metadata = {
   title: {

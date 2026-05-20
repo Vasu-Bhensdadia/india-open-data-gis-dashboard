@@ -63,7 +63,7 @@ function buildIndiaStateResource(
     stateId,
     resourceName ?? `India state ${stateId}`,
     baseUrl,
-    `${stateId}.geojson`,
+    `india/${stateId}`,
   );
 }
 
