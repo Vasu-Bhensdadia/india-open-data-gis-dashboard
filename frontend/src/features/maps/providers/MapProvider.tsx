@@ -14,12 +14,11 @@ type MapProviderProps = Readonly<{
  * to dynamically load assets at runtime and gracefully no-op if unavailable.
  */
 export function MapProvider({ children }: MapProviderProps) {
-  // Avoid client-only state side effects that trigger lint warnings; compute
-  // client availability synchronously and rely on DOM for CSS injection.
-  const isClient = typeof window !== "undefined";
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    // Inject a small Leaflet CSS from a CDN so the placeholder renders correctly.
+    Promise.resolve().then(() => setMounted(true));
+
     const id = "leaflet-cdn-css";
     if (!document.getElementById(id)) {
       const link = document.createElement("link");
@@ -32,5 +31,5 @@ export function MapProvider({ children }: MapProviderProps) {
     }
   }, []);
 
-  return <div data-map-provider>{isClient ? children : null}</div>;
+  return <div data-map-provider>{mounted ? children : null}</div>;
 }
