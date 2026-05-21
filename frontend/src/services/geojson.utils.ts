@@ -114,5 +114,6 @@ export async function fetchGeoJSON<T>(url: string, options?: GeoJSONLoadOptions)
 }
 
 export function resolveGeoJSONUrl(baseUrl: string, resourcePath: string): string {
-  return new URL(resourcePath, baseUrl).toString();
+  const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+  return new URL(resourcePath, normalizedBaseUrl).toString();
 }

@@ -80,6 +80,113 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+.leaflet-tooltip.geojson-map-tooltip {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(148, 163, 184, 0.4) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18) !important;
+  padding: 0.75rem 0.9rem !important;
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  max-width: 260px !important;
+}
+
+.geojson-map-tooltip-content {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.geojson-map-tooltip .tooltip-header {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.geojson-map-tooltip .tooltip-title {
+  font-weight: 700;
+}
+
+.geojson-map-tooltip .tooltip-subtitle {
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.8rem;
+}
+
+.geojson-map-tooltip .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.geojson-map-tooltip .tooltip-label {
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.geojson-map-tooltip .tooltip-value {
+  color: #f8fafc;
+  font-weight: 600;
+  text-align: right;
+}
+
+.geojson-map-tooltip-card,
+.geojson-map-tooltip .tooltip-content {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 260px;
+}
+
+.leaflet-interactive.geojson-selectable {
+  cursor: pointer;
+}
+
+.leaflet-interactive.geojson-selected {
+  filter: drop-shadow(0 0 18px rgba(234, 88, 12, 0.35));
+}
+
+.geojson-map-tooltip-card .tooltip-header {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.geojson-map-tooltip-card .tooltip-title,
+.geojson-map-tooltip .tooltip-title {
+  font-weight: 700;
+}
+
+.geojson-map-tooltip-card .tooltip-subtitle,
+.geojson-map-tooltip .tooltip-subtitle {
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.8rem;
+}
+
+.geojson-map-tooltip-card .tooltip-row,
+.geojson-map-tooltip .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.geojson-map-tooltip-card .tooltip-label,
+.geojson-map-tooltip .tooltip-label {
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.geojson-map-tooltip-card .tooltip-value,
+.geojson-map-tooltip .tooltip-value {
+  color: #f8fafc;
+  font-weight: 600;
+  text-align: right;
+}
+
+.geojson-map-tooltip-card .tooltip-analytics,
+.geojson-map-tooltip .tooltip-analytics {
+  color: rgba(148, 163, 184, 0.95);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  padding-top: 0.65rem;
+  font-size: 0.76rem;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -148,3 +255,8 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+.leaflet-interactive.geojson-hoverable {
+  cursor: pointer;
+  transition: stroke-width 160ms ease, fill-opacity 160ms ease, stroke-opacity 160ms ease;
+}
+
