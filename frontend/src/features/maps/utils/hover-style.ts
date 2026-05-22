@@ -7,13 +7,13 @@ export const defaultGeoJSONFeatureStyle: GeoJSONPathOptions = {
   weight: 1,
   opacity: 0.9,
   fillColor: "#d9f99d",
-  fillOpacity: 0.3,
+  fillOpacity: 0.85,
   lineJoin: "round",
 };
 
 export const hoverGeoJSONFeatureStyle: GeoJSONPathOptions = {
   weight: 3,
-  fillOpacity: 0.55,
+  opacity: 1,
 };
 
 export function mergeGeoJSONFeatureStyles(

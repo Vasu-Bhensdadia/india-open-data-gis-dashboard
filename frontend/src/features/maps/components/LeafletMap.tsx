@@ -1,13 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { defaultAttribution, defaultTileLayerUrl } from "../utils/map-utils";
 import { IndiaGeoJSONLayer } from "./IndiaGeoJSONLayer";
+import { LeafletControl } from "./LeafletControl";
 import { useIndiaGeoJSON } from "../hooks/useIndiaGeoJSON";
 import { useMapZoom } from "../hooks/useMapZoom";
+import { CHOROPLETH_METRIC_CONFIG, getChoroplethMetricLegendConfig } from "../utils/choropleth-style";
+import { useChoroplethModeStore } from "../choropleth.store";
+import { ChoroplethMetricSelector } from "./ChoroplethMetricSelector";
+import MapLegend from "@/components/map-legend/MapLegend";
 
 import type {
   GeoJSONFeature,
@@ -18,6 +23,30 @@ import { getSelectedFeatureInfo } from "../utils/feature-info";
 
 const DEFAULT_CENTER: [number, number] = [22.0, 78.0];
 const DEFAULT_ZOOM = 5;
+
+function MapPanes() {
+  const map = useMap();
+
+  useEffect(() => {
+    const paneConfigs = [
+      { name: "choroplethPane", zIndex: 450 },
+      { name: "choroplethHoverPane", zIndex: 550 },
+      { name: "choroplethSelectionPane", zIndex: 560 },
+    ];
+
+    paneConfigs.forEach(({ name, zIndex }) => {
+      const existingPane = map.getPane(name);
+      if (!existingPane) {
+        const pane = map.createPane(name);
+        pane.style.zIndex = String(zIndex);
+      } else {
+        existingPane.style.zIndex = String(zIndex);
+      }
+    });
+  }, [map]);
+
+  return null;
+}
 
 function MapResetControl() {
   const map = useMap();
@@ -88,6 +117,17 @@ export function LeafletMap() {
     },
   );
 
+  const selectedMetricKey = useChoroplethModeStore((state) => state.selectedMetricKey);
+  const selectedMetric = useMemo(
+    () => CHOROPLETH_METRIC_CONFIG[selectedMetricKey] ?? CHOROPLETH_METRIC_CONFIG.turnout,
+    [selectedMetricKey],
+  );
+
+  const selectedMetricLegendConfig = useMemo(
+    () => getChoroplethMetricLegendConfig(selectedMetric),
+    [selectedMetric],
+  );
+
   const [selectedFeature, setSelectedFeature] =
     useState<
       GeoJSONFeature<IndiaStateGeoJSONProperties> | null
@@ -101,6 +141,8 @@ export function LeafletMap() {
         scrollWheelZoom
         style={{ height: "100%", width: "100%" }}
       >
+        <MapPanes />
+
         <TileLayer
           url={defaultTileLayerUrl()}
           attribution={defaultAttribution()}
@@ -111,12 +153,21 @@ export function LeafletMap() {
         {data ? (
           <IndiaGeoJSONLayer
             data={data}
+            metric={selectedMetric}
             onSelectFeature={setSelectedFeature}
             onDeselectFeature={() =>
               setSelectedFeature(null)
             }
           />
         ) : null}
+
+        <LeafletControl position="topleft" className="!pointer-events-auto">
+          <ChoroplethMetricSelector />
+        </LeafletControl>
+
+        <LeafletControl position="bottomright" className="!pointer-events-auto">
+          <MapLegend config={selectedMetricLegendConfig} position="floating" />
+        </LeafletControl>
       </MapContainer>
 
       {selectedFeature ? (
@@ -126,6 +177,7 @@ export function LeafletMap() {
       ) : null}
 
       <div className="pointer-events-none absolute left-4 top-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-200">
+        <div className="font-semibold">{selectedMetric.label}</div>
         {loading && "Loading India GeoJSON..."}
 
         {error && "Unable to load map data."}

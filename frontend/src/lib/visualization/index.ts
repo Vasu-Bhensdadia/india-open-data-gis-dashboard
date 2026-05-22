@@ -1,0 +1,5 @@
+export * from './colorScale'
+export * from './classification'
+export * from './thematic'
+export * from './legendTypes'
+export * from './legendUtils'

@@ -11,53 +11,74 @@ import {
   mergeGeoJSONFeatureStyles,
 } from "../utils/hover-style";
 import { createGeoJSONFeatureSelectionStyle } from "../utils/selection-style";
+import type {
+  GeoJSONStyleResolver,
+  GeoJSONStyleSource,
+} from "../utils/style-utils";
+import {
+  createGeoJSONStyleResolver,
+  getGeoJSONStyleForFeature,
+} from "../utils/style-utils";
 
-export interface MapHoverConfig {
-  baseStyle?: GeoJSONPathOptions;
-  hoverStyle?: GeoJSONPathOptions;
-  selectedStyle?: GeoJSONPathOptions;
+export interface MapHoverConfig<TProperties = Record<string, unknown>> {
+  baseStyle?: GeoJSONStyleSource<TProperties>;
+  hoverStyle?: GeoJSONStyleSource<TProperties>;
+  selectedStyle?: GeoJSONStyleSource<TProperties>;
 }
 
 export interface MapHoverResult<TProperties = Record<string, unknown>> {
   style: (feature: GeoJSONFeature<TProperties>) => GeoJSONPathOptions;
-  baseStyle: GeoJSONPathOptions;
-  hoverStyle: GeoJSONPathOptions;
-  selectedStyle: GeoJSONPathOptions;
+  baseStyle: GeoJSONStyleResolver<TProperties>;
+  hoverStyle: GeoJSONStyleResolver<TProperties>;
+  selectedStyle: GeoJSONStyleResolver<TProperties>;
 }
 
-export function useMapHover<TProperties = Record<string, unknown>>(
-  config?: MapHoverConfig,
+export function useMapHover<
+  TProperties extends Record<string, unknown> = Record<string, unknown>,
+>(
+  config?: MapHoverConfig<TProperties>,
 ): MapHoverResult<TProperties> {
-  const { baseStyle: configBaseStyle, hoverStyle: configHoverStyle, selectedStyle: configSelectedStyle } = config ?? {};
+  const {
+    baseStyle: configBaseStyle,
+    hoverStyle: configHoverStyle,
+    selectedStyle: configSelectedStyle,
+  } = config ?? {};
 
   const baseStyle = useMemo(
     () =>
-      mergeGeoJSONFeatureStyles(
-        mergeGeoJSONFeatureStyles(defaultGeoJSONFeatureStyle, configBaseStyle ?? {}),
-        { className: GEOJSON_HOVERABLE_CLASS_NAME },
+      createGeoJSONStyleResolver(
+        configBaseStyle,
+        mergeGeoJSONFeatureStyles(defaultGeoJSONFeatureStyle, {
+          className: GEOJSON_HOVERABLE_CLASS_NAME,
+        }),
       ),
     [configBaseStyle],
   );
 
   const hoverStyle = useMemo(
     () =>
-      mergeGeoJSONFeatureStyles(
-        mergeGeoJSONFeatureStyles(baseStyle, hoverGeoJSONFeatureStyle),
-        configHoverStyle ?? {},
-      ),
+      (feature: GeoJSONFeature<TProperties>) =>
+        mergeGeoJSONFeatureStyles(
+          mergeGeoJSONFeatureStyles(baseStyle(feature), hoverGeoJSONFeatureStyle),
+          getGeoJSONStyleForFeature(configHoverStyle, feature),
+        ),
     [baseStyle, configHoverStyle],
   );
 
   const selectedStyle = useMemo(
     () =>
-      createGeoJSONFeatureSelectionStyle(
-        mergeGeoJSONFeatureStyles(baseStyle, configSelectedStyle ?? {}),
-      ),
+      (feature: GeoJSONFeature<TProperties>) =>
+        createGeoJSONFeatureSelectionStyle(
+          mergeGeoJSONFeatureStyles(
+            baseStyle(feature),
+            getGeoJSONStyleForFeature(configSelectedStyle, feature),
+          ),
+        ),
     [baseStyle, configSelectedStyle],
   );
 
   const style = useCallback(
-    (_feature: GeoJSONFeature<TProperties>): GeoJSONPathOptions => baseStyle,
+    (feature: GeoJSONFeature<TProperties>): GeoJSONPathOptions => baseStyle(feature),
     [baseStyle],
   );
 

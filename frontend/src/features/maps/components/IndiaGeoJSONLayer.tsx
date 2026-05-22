@@ -7,43 +7,57 @@ import type { GeoJsonObject } from "geojson";
 
 import { useFitBoundsFromLayer } from "../hooks/useMapBounds";
 import { useMapFeatureInteractions } from "../hooks/useMapFeatureInteractions";
+import {
+  createChoroplethStyleResolver,
+} from "../utils/choropleth-style";
 
 import type {
   GeoJSONFeatureCollection,
   GeoJSONFeature,
   IndiaStateGeoJSONProperties,
 } from "@/types/geojson";
+import type {
+  ChoroplethMetricDescriptor,
+} from "../types/choropleth";
 
 interface IndiaGeoJSONLayerProps {
   data: GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>;
+  metric: ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>;
   onSelectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
   onDeselectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
 }
 
 export function IndiaGeoJSONLayer({
   data,
+  metric,
   onSelectFeature,
   onDeselectFeature,
 }: IndiaGeoJSONLayerProps) {
   const map = useMap();
   const layerRef = useRef<any>(null);
 
+  const choroplethStyleResolver = useMemo(
+    () =>
+      createChoroplethStyleResolver(metric, {
+        color: "#0f766e",
+        weight: 1.2,
+        opacity: 1,
+        fillOpacity: 0.85,
+      }),
+    [metric],
+  );
+
   const { style, onEachFeature } = useMapFeatureInteractions<IndiaStateGeoJSONProperties>(map, {
-    baseStyle: {
-      color: "#2563eb",
-      weight: 2,
-      fillColor: "#60a5fa",
-      fillOpacity: 0.35,
-    },
+    baseStyle: choroplethStyleResolver,
     hoverStyle: {
       weight: 3,
-      fillOpacity: 0.6,
+      color: "#0f766e",
+      opacity: 1,
     },
     selectedStyle: {
       color: "#ea580c",
       weight: 4,
-      fillColor: "#fbbf24",
-      fillOpacity: 0.55,
+      opacity: 1,
     },
     onSelectFeature,
     onDeselectFeature,
@@ -62,6 +76,7 @@ export function IndiaGeoJSONLayer({
     <GeoJSON
       data={styledData as GeoJsonObject}
       ref={layerRef}
+      pane="choroplethPane"
       style={style}
       onEachFeature={onEachFeature}
     />

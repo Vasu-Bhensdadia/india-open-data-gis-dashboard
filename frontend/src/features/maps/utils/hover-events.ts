@@ -7,19 +7,22 @@ import {
   mergeGeoJSONFeatureStyles,
 } from "./hover-style";
 import { createGeoJSONFeatureSelectionStyle } from "./selection-style";
+import type { GeoJSONStyleSource } from "./style-utils";
+import { getGeoJSONStyleForFeature } from "./style-utils";
 
 interface HoverableLeafletLayer {
   _geojsonInteractionBound?: boolean;
   _geojsonSelected?: boolean;
   setStyle?: (style: GeoJSONPathOptions) => void;
   bindTooltip?: (content: string, options?: Record<string, unknown>) => unknown;
+  bringToFront?: () => void;
   on: (events: Record<string, () => void>) => unknown;
 }
 
 export interface MapFeatureHoverActions<TProperties = Record<string, unknown>> {
-  baseStyle?: GeoJSONPathOptions;
-  hoverStyle?: GeoJSONPathOptions;
-  selectedStyle?: GeoJSONPathOptions;
+  baseStyle?: GeoJSONStyleSource<TProperties>;
+  hoverStyle?: GeoJSONStyleSource<TProperties>;
+  selectedStyle?: GeoJSONStyleSource<TProperties>;
   onHoverFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   onLeaveFeature?: (feature: GeoJSONFeature<TProperties>) => void;
 }
@@ -38,7 +41,9 @@ export function createGeoJSONFeatureStyle(
   };
 }
 
-export function bindGeoJSONFeatureHover<TProperties = Record<string, unknown>>(
+export function bindGeoJSONFeatureHover<
+  TProperties extends Record<string, unknown> = Record<string, unknown>,
+>(
   layer: unknown,
   feature: GeoJSONFeature<TProperties>,
   actions: MapFeatureInteractionActions<TProperties>,
@@ -56,17 +61,23 @@ export function bindGeoJSONFeatureHover<TProperties = Record<string, unknown>>(
   hoverableLayer._geojsonInteractionBound = true;
 
   const baseStyle = createGeoJSONFeatureStyle(
-    mergeGeoJSONFeatureStyles(defaultGeoJSONFeatureStyle, actions.baseStyle ?? {}),
+    mergeGeoJSONFeatureStyles(
+      defaultGeoJSONFeatureStyle,
+      getGeoJSONStyleForFeature(actions.baseStyle, feature),
+    ),
   );
   const hoverStyle = createGeoJSONFeatureStyle(
     mergeGeoJSONFeatureStyles(
       mergeGeoJSONFeatureStyles(baseStyle, hoverGeoJSONFeatureStyle),
-      actions.hoverStyle ?? {},
+      getGeoJSONStyleForFeature(actions.hoverStyle, feature),
     ),
   );
 
   const selectedStyle = createGeoJSONFeatureStyle(
-    mergeGeoJSONFeatureStyles(baseStyle, actions.selectedStyle ?? {}),
+    mergeGeoJSONFeatureStyles(
+      baseStyle,
+      getGeoJSONStyleForFeature(actions.selectedStyle, feature),
+    ),
   );
   const selectedRestoreStyle = createGeoJSONFeatureSelectionStyle(
     selectedStyle,
@@ -88,7 +99,11 @@ export function bindGeoJSONFeatureHover<TProperties = Record<string, unknown>>(
   hoverableLayer.on({
     mouseover: () => {
       if (typeof hoverableLayer.setStyle === "function") {
-        hoverableLayer.setStyle(hoverStyle);
+        if (hoverableLayer._geojsonSelected) {
+          hoverableLayer.setStyle(selectedStyle);
+        } else {
+          hoverableLayer.setStyle(hoverStyle);
+        }
       }
 
       actions.onHoverFeature?.(feature);
@@ -103,7 +118,9 @@ export function bindGeoJSONFeatureHover<TProperties = Record<string, unknown>>(
   });
 }
 
-export function bindGeoJSONFeatureInteractions<TProperties = Record<string, unknown>>(
+export function bindGeoJSONFeatureInteractions<
+  TProperties extends Record<string, unknown> = Record<string, unknown>,
+>(
   layer: unknown,
   feature: GeoJSONFeature<TProperties>,
   actions: MapFeatureInteractionActions<TProperties>,

@@ -2,15 +2,18 @@ import { useCallback } from "react";
 
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { GeoJSONPathOptions } from "../utils/hover-style";
+import type {
+  GeoJSONStyleSource,
+} from "../utils/style-utils";
 import { bindGeoJSONFeatureInteractions } from "../utils/hover-events";
 import { useMapHover } from "./useMapHover";
 import { useMapSelection } from "./useMapSelection";
 import { useMapZoom } from "./useMapZoom";
 
 export interface MapFeatureInteractionConfig<TProperties = Record<string, unknown>> {
-  baseStyle?: GeoJSONPathOptions;
-  hoverStyle?: GeoJSONPathOptions;
-  selectedStyle?: GeoJSONPathOptions;
+  baseStyle?: GeoJSONStyleSource<TProperties>;
+  hoverStyle?: GeoJSONStyleSource<TProperties>;
+  selectedStyle?: GeoJSONStyleSource<TProperties>;
   onSelectFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   onDeselectFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   onHoverFeature?: (feature: GeoJSONFeature<TProperties>) => void;
