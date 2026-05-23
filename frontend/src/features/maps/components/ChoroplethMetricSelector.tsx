@@ -1,13 +1,14 @@
 "use client";
 
-import { CHOROPLETH_METRIC_CONFIG } from "../utils/choropleth-style";
 import { useChoroplethModeStore } from "../choropleth.store";
 import type { ChoroplethMetricKey } from "../types/choropleth";
 
 export function ChoroplethMetricSelector() {
   const selectedMetricKey = useChoroplethModeStore((state) => state.selectedMetricKey);
   const setSelectedMetricKey = useChoroplethModeStore((state) => state.setSelectedMetricKey);
-  const metricOptions = Object.values(CHOROPLETH_METRIC_CONFIG) as {
+  const metricConfig = useChoroplethModeStore((state) => state.metricConfig);
+
+  const metricOptions = Object.values(metricConfig) as {
     key: ChoroplethMetricKey;
     label: string;
     description: string;

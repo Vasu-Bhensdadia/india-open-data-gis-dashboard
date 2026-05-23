@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
 import type { GeoJsonObject } from "geojson";
 
 import { useFitBoundsFromLayer } from "../hooks/useMapBounds";
 import { useMapFeatureInteractions } from "../hooks/useMapFeatureInteractions";
-import {
-  createChoroplethStyleResolver,
-} from "../utils/choropleth-style";
+import { choroplethStyleResolver } from "../utils/choropleth-style";
 
 import type {
   GeoJSONFeatureCollection,
@@ -36,28 +34,26 @@ export function IndiaGeoJSONLayer({
   const map = useMap();
   const layerRef = useRef<any>(null);
 
-  const choroplethStyleResolver = useMemo(
-    () =>
-      createChoroplethStyleResolver(metric, {
-        color: "#0f766e",
-        weight: 1.2,
-        opacity: 1,
-        fillOpacity: 0.85,
-      }),
-    [metric],
+  // 1. Define our dynamic choropleth style
+  const choroplethStyle = useCallback(
+    (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => choroplethStyleResolver(feature, metric),
+    [metric]
   );
 
+  // 2. Pass it into baseStyle so the interaction hooks know what color to revert to
   const { style, onEachFeature } = useMapFeatureInteractions<IndiaStateGeoJSONProperties>(map, {
-    baseStyle: choroplethStyleResolver,
+    baseStyle: choroplethStyle, // <--- THIS IS THE MAGIC FIX
     hoverStyle: {
       weight: 3,
       color: "#0f766e",
       opacity: 1,
+      // No fillColor here, so it inherits the correct shade from baseStyle
     },
     selectedStyle: {
       color: "#ea580c",
       weight: 4,
       opacity: 1,
+      // No fillColor here either
     },
     onSelectFeature,
     onDeselectFeature,
@@ -74,10 +70,11 @@ export function IndiaGeoJSONLayer({
 
   return (
     <GeoJSON
+      key={`${metric.key}-${styledData.features?.length || 0}`}
       data={styledData as GeoJsonObject}
       ref={layerRef}
       pane="choroplethPane"
-      style={style}
+      style={style as any} // 3. Use the style returned by your interaction hook
       onEachFeature={onEachFeature}
     />
   );

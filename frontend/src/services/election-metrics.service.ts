@@ -16,8 +16,15 @@ export interface ElectionMetricsIndex {
 
 let cachedMetrics: ElectionMetricsIndex | null = null;
 
-function normalizeKey(stateName: string, constituencyName: string): string {
-  return `${stateName.trim().toUpperCase()}|${constituencyName.trim().toUpperCase()}`;
+// This fixes the Join issue by stripping spaces, symbols, and (SC)/(ST) tags
+export function normalizeKey(stateName: string, constituencyName: string): string {
+  const clean = (str: string) =>
+    str.toUpperCase()
+       .replace(/\(SC\)/g, "")
+       .replace(/\(ST\)/g, "")
+       .replace(/[^A-Z0-9]/g, ""); // removes all spaces and special characters
+
+  return `${clean(stateName)}|${clean(constituencyName)}`;
 }
 
 export async function loadElectionMetrics(): Promise<ElectionMetricsIndex> {
@@ -32,7 +39,18 @@ export async function loadElectionMetrics(): Promise<ElectionMetricsIndex> {
     }
 
     const data = await response.json();
-    cachedMetrics = data as ElectionMetricsIndex;
+    const index: ElectionMetricsIndex = {};
+
+    // Re-index the dictionary using our bulletproof normalized key
+    for (const [_key, value] of Object.entries(data)) {
+      const item = value as ElectionMetrics;
+      if (item.state_name && item.constituency_name) {
+        const superCleanKey = normalizeKey(item.state_name, item.constituency_name);
+        index[superCleanKey] = item;
+      }
+    }
+
+    cachedMetrics = index;
     console.log(
       `Election metrics loaded: ${Object.keys(cachedMetrics ?? {}).length} constituencies`,
     );
@@ -54,36 +72,15 @@ export function getElectionMetrics(
 
 export function getPartyColor(partyName: string): string {
   const partyColorMap: Record<string, string> = {
-    "Bharatiya Janata Party": "#ff6600",
-    "Indian National Congress": "#0066cc",
-    "Telugu Desam": "#ffaa00",
-    "Yuvajana Sramika Rythu Congress Party": "#cc00cc",
-    "Dravida Munnetra Kazhagam": "#000000",
-    "Shiv Sena": "#ff3333",
-    "Samajwadi Party": "#ff33ff",
-    "Trinamool Congress": "#00cccc",
-    "Communist Party of India (Marxist)": "#ff0000",
-    "National Conference": "#0099ff",
-    "Peoples Democratic Party": "#009900",
-    "Telangana Rashtra Samithi": "#ff00ff",
+    "Bharatiya Janata Party": "#ff9933",
+    "Indian National Congress": "#19AAED",
+    "Telugu Desam": "#ffe200",
+    "Yuvajana Sramika Rythu Congress Party": "#1569C7",
+    "Dravida Munnetra Kazhagam": "#dd1100",
+    "Shiv Sena": "#ff6600",
+    "Samajwadi Party": "#ff2222",
+    "All India Trinamool Congress": "#20C646",
+    "Communist Party of India (Marxist)": "#cc0000",
   };
-
-  return partyColorMap[partyName] ?? "#999999";
-}
-
-export function getMarginColor(marginPercentage: number): string {
-  // Color scale for winner margin percentage (0-100)
-  if (marginPercentage < 5) {
-    return "#fee2e2"; // Very close race - light red
-  }
-  if (marginPercentage < 10) {
-    return "#fca5a5"; // Close race - medium red
-  }
-  if (marginPercentage < 20) {
-    return "#f97316"; // Moderate margin - orange
-  }
-  if (marginPercentage < 40) {
-    return "#eab308"; // Strong margin - yellow
-  }
-  return "#22c55e"; // Very strong margin - green
+  return partyColorMap[partyName] ?? "#9ca3af"; // Default gray for others
 }

@@ -9,7 +9,7 @@ import { IndiaGeoJSONLayer } from "./IndiaGeoJSONLayer";
 import { LeafletControl } from "./LeafletControl";
 import { useIndiaGeoJSON } from "../hooks/useIndiaGeoJSON";
 import { useMapZoom } from "../hooks/useMapZoom";
-import { CHOROPLETH_METRIC_CONFIG, getChoroplethMetricLegendConfig } from "../utils/choropleth-style";
+import { getChoroplethMetricLegendConfig } from "../utils/choropleth-style";
 import { useChoroplethModeStore } from "../choropleth.store";
 import { ChoroplethMetricSelector } from "./ChoroplethMetricSelector";
 import MapLegend from "@/components/map-legend/MapLegend";
@@ -18,6 +18,7 @@ import type {
   GeoJSONFeature,
   IndiaStateGeoJSONProperties,
 } from "@/types/geojson";
+import type { ChoroplethMetricDescriptor } from "../types/choropleth";
 
 import { getSelectedFeatureInfo } from "../utils/feature-info";
 
@@ -117,14 +118,29 @@ export function LeafletMap() {
     },
   );
 
-  const selectedMetricKey = useChoroplethModeStore((state) => state.selectedMetricKey);
+  const { selectedMetricKey, metricConfig, isConfigLoaded, loadConfig } = useChoroplethModeStore();
+
+  useEffect(() => {
+    loadConfig();
+  }, [loadConfig]);
+
   const selectedMetric = useMemo(
-    () => CHOROPLETH_METRIC_CONFIG[selectedMetricKey] ?? CHOROPLETH_METRIC_CONFIG.turnout,
-    [selectedMetricKey],
+    () => {
+      if (!isConfigLoaded) return undefined;
+
+      return (
+        metricConfig[selectedMetricKey] ??
+        metricConfig.marginPercentage ??
+        Object.values(metricConfig)[0]
+      );
+    },
+    [selectedMetricKey, metricConfig, isConfigLoaded],
   );
 
   const selectedMetricLegendConfig = useMemo(
-    () => getChoroplethMetricLegendConfig(selectedMetric),
+    () => selectedMetric
+      ? getChoroplethMetricLegendConfig(selectedMetric)
+      : undefined,
     [selectedMetric],
   );
 
@@ -150,10 +166,10 @@ export function LeafletMap() {
 
         <MapResetControl />
 
-        {data ? (
+        {data && isConfigLoaded && selectedMetric ? (
           <IndiaGeoJSONLayer
             data={data}
-            metric={selectedMetric}
+            metric={selectedMetric as ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>}
             onSelectFeature={setSelectedFeature}
             onDeselectFeature={() =>
               setSelectedFeature(null)
@@ -165,9 +181,14 @@ export function LeafletMap() {
           <ChoroplethMetricSelector />
         </LeafletControl>
 
-        <LeafletControl position="bottomright" className="!pointer-events-auto">
-          <MapLegend config={selectedMetricLegendConfig} position="floating" />
-        </LeafletControl>
+        {selectedMetricLegendConfig ? (
+          <LeafletControl position="bottomright" className="!pointer-events-auto">
+            <MapLegend
+              config={selectedMetricLegendConfig}
+              position="floating"
+            />
+          </LeafletControl>
+        ) : null}
       </MapContainer>
 
       {selectedFeature ? (
@@ -177,8 +198,10 @@ export function LeafletMap() {
       ) : null}
 
       <div className="pointer-events-none absolute left-4 top-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-200">
-        <div className="font-semibold">{selectedMetric.label}</div>
-        {loading && "Loading India GeoJSON..."}
+        <div className="font-semibold">
+          {selectedMetric?.label ?? "Loading metric configuration..."}
+        </div>
+        {(loading || !isConfigLoaded) && "Loading map data..."}
 
         {error && "Unable to load map data."}
       </div>

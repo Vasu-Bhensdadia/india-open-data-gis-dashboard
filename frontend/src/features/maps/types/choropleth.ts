@@ -1,53 +1,34 @@
-import type { GeoJSONFeature } from "@/types/geojson";
-import type { GeoJSONPathOptions } from "../utils/hover-style";
+export type ChoroplethMetricKey = "winningParty" | "marginPercentage" | "totalVotes";
 
-export type ChoroplethMetricKey =
-  | "winningParty"
-  | "turnout"
-  | "literacyRate"
-  | "population";
-
-export type ChoroplethMetricKind = "numeric" | "categorical";
-
-export interface ChoroplethColorStop {
+export interface ColorStop {
   value: number;
   color: string;
 }
 
-export interface ChoroplethColorScale {
-  stops: ChoroplethColorStop[];
+export interface ColorScale {
   emptyColor: string;
+  stops: ColorStop[];
 }
 
-export interface ChoroplethBaseMetricDescriptor<TProperties = Record<string, unknown>> {
+export interface BaseMetricDescriptor<TProperties> {
   key: ChoroplethMetricKey;
   label: string;
   description: string;
-  kind: ChoroplethMetricKind;
-  formatValue: (value: number | string) => string;
-  extractValue: (feature: GeoJSONFeature<TProperties>) => number | string | null;
+  extractValue: (feature: { properties: TProperties }) => string | number | null;
+  formatValue: (value: string | number | null) => string;
 }
 
-export interface ChoroplethNumericMetricDescriptor<TProperties = Record<string, unknown>>
-  extends ChoroplethBaseMetricDescriptor<TProperties> {
-  kind: "numeric";
-  colorScale: ChoroplethColorScale;
-}
-
-export interface ChoroplethCategoricalMetricDescriptor<TProperties = Record<string, unknown>>
-  extends ChoroplethBaseMetricDescriptor<TProperties> {
+export interface CategoricalMetricDescriptor<TProperties> extends BaseMetricDescriptor<TProperties> {
   kind: "categorical";
   categoryColorMap: Record<string, string>;
   defaultCategoryColor: string;
 }
 
-export type ChoroplethMetricDescriptor<TProperties = Record<string, unknown>> =
-  | ChoroplethNumericMetricDescriptor<TProperties>
-  | ChoroplethCategoricalMetricDescriptor<TProperties>;
-
-export interface ChoroplethConfig<TProperties = Record<string, unknown>> {
-  metric: ChoroplethMetricDescriptor<TProperties>;
-  baseStyle: GeoJSONPathOptions;
-  hoverStyle?: GeoJSONPathOptions;
-  selectedStyle?: GeoJSONPathOptions;
+export interface NumericMetricDescriptor<TProperties> extends BaseMetricDescriptor<TProperties> {
+  kind: "numeric";
+  colorScale: ColorScale;
 }
+
+export type ChoroplethMetricDescriptor<TProperties> =
+  | CategoricalMetricDescriptor<TProperties>
+  | NumericMetricDescriptor<TProperties>;
