@@ -1,5 +1,4 @@
-export type ChoroplethMetricKey = "winningParty" | "marginPercentage" | "totalVotes";
-
+export type ChoroplethMetricKey = "boundaryOnly" | "winningParty" | "marginPercentage" | "totalVotes";
 export interface ColorStop {
   value: number;
   color: string;

@@ -1,7 +1,8 @@
 "use client";
 
+import type { GeoJsonObject } from "geojson";
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { defaultAttribution, defaultTileLayerUrl } from "../utils/map-utils";
@@ -31,6 +32,7 @@ function MapPanes() {
   useEffect(() => {
     const paneConfigs = [
       { name: "choroplethPane", zIndex: 450 },
+      { name: "stateBoundaryPane", zIndex: 460 },
       { name: "choroplethHoverPane", zIndex: 550 },
       { name: "choroplethSelectionPane", zIndex: 560 },
     ];
@@ -118,6 +120,17 @@ export function LeafletMap() {
     },
   );
 
+  // ---> ADD THESE LINES: Fetch the state boundaries <---
+  const [stateBoundaries, setStateBoundaries] = useState<GeoJsonObject | null>(null);
+
+  useEffect(() => {
+    fetch("/data/state_geojson_for_website.geojson")
+      .then((response) => response.json())
+      .then((jsonData) => setStateBoundaries(jsonData))
+      .catch((err) => console.error("Error loading state boundaries:", err));
+  }, []);
+  // ----------------------------------------------------
+
   const { selectedMetricKey, metricConfig, isConfigLoaded, loadConfig } = useChoroplethModeStore();
 
   useEffect(() => {
@@ -176,6 +189,23 @@ export function LeafletMap() {
             }
           />
         ) : null}
+
+        {/* ---> ADD THIS NEW BLOCK: The State Boundary Layer (Top) <--- */}
+        {stateBoundaries ? (
+          <GeoJSON
+            key="india-state-boundaries"
+            data={stateBoundaries as GeoJsonObject}
+            pane="stateBoundaryPane"
+            style={{
+              fillOpacity: 0,    // Completely transparent inside so constituency colors show through
+              color: "#000000",  // Solid black state borders
+              weight: 2,         // Thicker line so it stands out above constituencies
+              opacity: 0.9,      // Very high opacity for a sharp, dark line
+            }}
+            interactive={false}  // CRITICAL: This lets your mouse "click through" to hover over constituencies!
+          />
+        ) : null}
+        {/* ----------------------------------------------------------- */}
 
         <LeafletControl position="topleft" className="!pointer-events-auto">
           <ChoroplethMetricSelector />

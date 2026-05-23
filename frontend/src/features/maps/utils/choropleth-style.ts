@@ -27,6 +27,16 @@ export async function createChoroplethMetricConfig(): Promise<
   }
 
   return {
+    boundaryOnly: {
+      key: "boundaryOnly",
+      kind: "categorical",
+      label: "Base Map (Boundaries)",
+      description: "Constituency boundaries without data shading.",
+      categoryColorMap: {},
+      defaultCategoryColor: "#e2e8f0",
+      formatValue: () => "-",
+      extractValue: () => null, // Returning null forces the map to use the default border/fill style
+    },
     winningParty: {
       key: "winningParty",
       kind: "categorical",
@@ -101,6 +111,16 @@ export async function createChoroplethMetricConfig(): Promise<
 export function getChoroplethMetricLegendConfig(
   descriptor: ChoroplethMetricDescriptor<Record<string, unknown>>,
 ): LegendConfig {
+  if (descriptor.key === "boundaryOnly") {
+    return {
+      type: "categorical",
+      title: descriptor.label,
+      items: [
+        { label: "Constituency Area", color: "#e2e8f0" } // Shows a blank square in the legend
+      ],
+    };
+  }
+
   if (descriptor.kind === "categorical") {
     return {
       type: "categorical",
@@ -136,11 +156,22 @@ export function choroplethStyleResolver<
   feature: GeoJSONFeature<TProperties> | undefined,
   metric: ChoroplethMetricDescriptor<TProperties>,
 ): Record<string, unknown> {
+
+  if (metric.key === "boundaryOnly") {
+    return {
+      fillColor: "#ffffff", // Completely solid white background
+      fillOpacity: 0,       // 100% solid, NOT transparent
+      color: "#2563eb",     // Strong blue border
+      weight: 1.2,          // Slightly thicker line to look like a KML layer
+      opacity: 1,           // Solid border line
+    };
+  }
+
   const defaultStyle = {
-    fillColor: "#f8fafc",
+    fillColor: "#e2e8f0",
     weight: 1,
     opacity: 1,
-    color: "#e2e8f0",
+    color: "#cbd5e1",
     fillOpacity: 0.8,
   };
 

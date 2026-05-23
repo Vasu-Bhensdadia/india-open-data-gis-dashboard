@@ -11,7 +11,7 @@ export interface ChoroplethModeState {
 }
 
 export const useChoroplethModeStore = create<ChoroplethModeState>()((set, get) => ({
-  selectedMetricKey: "marginPercentage",
+  selectedMetricKey: "boundaryOnly",
   setSelectedMetricKey: (selectedMetricKey) => set({ selectedMetricKey }),
   metricConfig: CHOROPLETH_METRIC_CONFIG,
   isConfigLoaded: false,
