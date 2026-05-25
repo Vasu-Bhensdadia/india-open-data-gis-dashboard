@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 import { env } from "@/config/env";
 import { HttpError } from "@/utils/http-error";
@@ -18,24 +18,27 @@ function getGeoJSONFilePath(filename: string): string {
   return filePath;
 }
 
-export async function getIndiaGeoJSON(request: Request, response: Response) {
+export async function getIndiaGeoJSON(request: Request, response: Response, next: NextFunction) {
   const filename = Array.isArray(request.params.filename)
     ? request.params.filename[0]
     : request.params.filename;
 
   if (!filename) {
-    throw new HttpError(400, "GeoJSON filename is required.", "GEOJSON_FILENAME_REQUIRED");
+    next(new HttpError(400, "GeoJSON filename is required.", "GEOJSON_FILENAME_REQUIRED"));
+    return;
   }
 
   const filePath = getGeoJSONFilePath(filename);
 
   if (!fs.existsSync(filePath)) {
-    throw new HttpError(404, `GeoJSON dataset not found: ${filename}`, "GEOJSON_NOT_FOUND");
+    next(new HttpError(404, `GeoJSON dataset not found: ${filename}`, "GEOJSON_NOT_FOUND"));
+    return;
   }
 
   response.sendFile(filePath, (error) => {
     if (error) {
-      throw new HttpError(500, "Unable to stream GeoJSON dataset.", "GEOJSON_STREAM_ERROR");
+      const message = error instanceof Error ? error.message : "Unable to stream GeoJSON dataset.";
+      next(new HttpError(500, `Unable to stream GeoJSON dataset: ${message}`, "GEOJSON_STREAM_ERROR"));
     }
   });
 }

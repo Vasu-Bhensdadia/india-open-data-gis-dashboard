@@ -24,6 +24,10 @@ export function useIndiaGeoJSON(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const cacheKey = options?.cacheKey;
+  const forceReload = options?.forceReload;
+  const signal = options?.signal;
+
   useEffect(() => {
     let mounted = true;
 
@@ -35,7 +39,11 @@ export function useIndiaGeoJSON(
         const collection = await geoJSONService.loadIndiaStateCollection(
           env.NEXT_PUBLIC_API_URL,
           resourceId,
-          options,
+          {
+            cacheKey,
+            forceReload,
+            signal,
+          },
         );
 
         if (mounted) {
@@ -57,7 +65,7 @@ export function useIndiaGeoJSON(
     return () => {
       mounted = false;
     };
-  }, [resourceId, options, options?.cacheKey, options?.forceReload, options?.signal]);
+  }, [resourceId, cacheKey, forceReload, signal]);
 
   return {
     data,

@@ -10,6 +10,7 @@ import { IndiaGeoJSONLayer } from "./IndiaGeoJSONLayer";
 import { LeafletControl } from "./LeafletControl";
 import { useIndiaGeoJSON } from "../hooks/useIndiaGeoJSON";
 import { useMapZoom } from "../hooks/useMapZoom";
+import { useFilteredGeoJSON } from "@/features/filters";
 import { getChoroplethMetricLegendConfig } from "../utils/choropleth-style";
 import { useChoroplethModeStore } from "../choropleth.store";
 import { ChoroplethMetricSelector } from "./ChoroplethMetricSelector";
@@ -17,6 +18,7 @@ import MapLegend from "@/components/map-legend/MapLegend";
 
 import type {
   GeoJSONFeature,
+  GeoJSONFeatureCollection,
   IndiaStateGeoJSONProperties,
 } from "@/types/geojson";
 import type { ChoroplethMetricDescriptor } from "../types/choropleth";
@@ -157,6 +159,13 @@ export function LeafletMap() {
     [selectedMetric],
   );
 
+  const filteredGeoJSON = useFilteredGeoJSON(
+    data as GeoJSONFeatureCollection<Record<string, unknown>> | null,
+  );
+  const visibleGeoJSON = filteredGeoJSON
+    ? (filteredGeoJSON as GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>)
+    : data;
+
   const [selectedFeature, setSelectedFeature] =
     useState<
       GeoJSONFeature<IndiaStateGeoJSONProperties> | null
@@ -179,9 +188,9 @@ export function LeafletMap() {
 
         <MapResetControl />
 
-        {data && isConfigLoaded && selectedMetric ? (
+        {visibleGeoJSON && isConfigLoaded && selectedMetric ? (
           <IndiaGeoJSONLayer
-            data={data}
+            data={visibleGeoJSON}
             metric={selectedMetric as ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>}
             onSelectFeature={setSelectedFeature}
             onDeselectFeature={() =>
