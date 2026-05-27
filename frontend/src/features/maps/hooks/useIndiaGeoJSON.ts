@@ -20,7 +20,9 @@ export function useIndiaGeoJSON(
   resourceId: string,
   options?: GeoJSONLoadOptions,
 ): IndiaGeoJSONState {
-  const [data, setData] = useState<GeoJSONFeatureCollection<IndiaStateGeoJSONProperties> | null>(null);
+  const [data, setData] = useState<GeoJSONFeatureCollection<IndiaStateGeoJSONProperties> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

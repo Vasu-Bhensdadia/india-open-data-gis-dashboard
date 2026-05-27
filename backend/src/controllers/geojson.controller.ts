@@ -38,7 +38,9 @@ export async function getIndiaGeoJSON(request: Request, response: Response, next
   response.sendFile(filePath, (error) => {
     if (error) {
       const message = error instanceof Error ? error.message : "Unable to stream GeoJSON dataset.";
-      next(new HttpError(500, `Unable to stream GeoJSON dataset: ${message}`, "GEOJSON_STREAM_ERROR"));
+      next(
+        new HttpError(500, `Unable to stream GeoJSON dataset: ${message}`, "GEOJSON_STREAM_ERROR"),
+      );
     }
   });
 }

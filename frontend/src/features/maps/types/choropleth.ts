@@ -1,4 +1,8 @@
-export type ChoroplethMetricKey = "boundaryOnly" | "winningParty" | "marginPercentage" | "totalVotes";
+export type ChoroplethMetricKey =
+  | "boundaryOnly"
+  | "winningParty"
+  | "marginPercentage"
+  | "totalVotes";
 export interface ColorStop {
   value: number;
   color: string;
@@ -17,7 +21,9 @@ export interface BaseMetricDescriptor<TProperties> {
   formatValue: (value: string | number | null) => string;
 }
 
-export interface CategoricalMetricDescriptor<TProperties> extends BaseMetricDescriptor<TProperties> {
+export interface CategoricalMetricDescriptor<
+  TProperties,
+> extends BaseMetricDescriptor<TProperties> {
   kind: "categorical";
   categoryColorMap: Record<string, string>;
   defaultCategoryColor: string;

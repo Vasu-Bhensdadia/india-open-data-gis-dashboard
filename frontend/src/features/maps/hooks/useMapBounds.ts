@@ -3,16 +3,9 @@
 
 import { useEffect, type RefObject } from "react";
 
-export function useFitBoundsFromLayer(
-  map: any,
-  layerRef: RefObject<any>
-) {
+export function useFitBoundsFromLayer(map: any, layerRef: RefObject<any>) {
   useEffect(() => {
-    if (
-      !map ||
-      !layerRef.current ||
-      typeof layerRef.current.getBounds !== "function"
-    ) {
+    if (!map || !layerRef.current || typeof layerRef.current.getBounds !== "function") {
       return;
     }
 

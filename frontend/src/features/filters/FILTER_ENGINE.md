@@ -12,7 +12,7 @@ A comprehensive, reusable filtering system for the GIS dashboard that dynamicall
 ✅ **Performance Optimized** - Memoized calculations and lazy metric loading  
 ✅ **Type-Safe** - Full TypeScript support with comprehensive types  
 ✅ **Extensible** - Easy to add new filter types (district, year, etc.)  
-✅ **Debugging Support** - Filter snapshots, statistics, breakdowns  
+✅ **Debugging Support** - Filter snapshots, statistics, breakdowns
 
 ## Architecture
 
@@ -67,6 +67,7 @@ const partyFilter: FilterConfig["party"] = {
 ```
 
 **Use Cases:**
+
 - Show only constituencies won by a specific party
 - Compare performance across multiple parties
 - Analyze party-specific trends
@@ -84,6 +85,7 @@ const stateFilter: FilterConfig["state"] = {
 ```
 
 **Use Cases:**
+
 - Focus on specific states
 - Regional analysis
 - Multi-state comparisons
@@ -102,6 +104,7 @@ const marginFilter: FilterConfig["marginPercentage"] = {
 ```
 
 **Use Cases:**
+
 - Find close contests
 - Identify safe seats
 - Margin analysis
@@ -120,6 +123,7 @@ const votesFilter: FilterConfig["totalVotes"] = {
 ```
 
 **Use Cases:**
+
 - Analyze high/low turnout regions
 - Vote distribution analysis
 - Participation patterns
@@ -138,6 +142,7 @@ const winnerVotesFilter: FilterConfig["winnerVotes"] = {
 ```
 
 **Use Cases:**
+
 - Find dominant candidates
 - Analyze winning margins
 - Candidate performance metrics
@@ -151,7 +156,7 @@ import { useFilterEngine } from '@/features/filters';
 
 function MapComponent({ geoJSON }) {
   const { filteredFeatures, filterStatus } = useFilterEngine(geoJSON.features);
-  
+
   return (
     <div>
       <p>{filterStatus.matchedPercentage.toFixed(1)}% of features visible</p>
@@ -171,14 +176,14 @@ function FilterPanel({ geoJSON }) {
   const filters = useDashboardStore(selectAllFilters);
   const { toggleStateFilter } = useDashboardStore();
   const { filterStatus } = useFilterEngine(geoJSON.features);
-  
+
   return (
     <div>
       <h3>Filters</h3>
       {filterStatus.appliedFilters.map(desc => (
         <p key={desc}>{desc}</p>
       ))}
-      
+
       <StateSelector onToggle={toggleStateFilter} />
       <PartySelector />
       <RangeSliders />
@@ -194,7 +199,7 @@ import { useDetailedFilterEngine } from '@/features/filters';
 
 function AnalyticsPanel({ geoJSON }) {
   const { detailedResult, filterBreakdown } = useDetailedFilterEngine(geoJSON.features);
-  
+
   return (
     <div>
       <p>Total Features: {detailedResult?.statistics.totalFeatures}</p>
@@ -216,7 +221,7 @@ function LeafletMap({ geoJSON, metricsIndex }) {
     geoJSON.features,
     metricsIndex
   );
-  
+
   return (
     <MapContainer>
       <GeoJSON
@@ -247,7 +252,7 @@ import { useDashboardStore } from '@/store';
 
 function PresetButtons() {
   const { setMarginFilter } = useDashboardStore();
-  
+
   return (
     <div>
       <button onClick={() => {
@@ -255,7 +260,7 @@ function PresetButtons() {
       }}>
         Show High-Margin Wins
       </button>
-      
+
       <button onClick={() => {
         setMarginFilter(PRESET_CLOSE_CONTEST.marginPercentage!);
       }}>
@@ -274,12 +279,12 @@ Main hook for applying filters to features.
 
 ```typescript
 const {
-  filteredFeatures,    // Features matching all filters
-  filterResult,        // Detailed filter result with statistics
-  filterStatus,        // Current filter status
-  metricsIndex,        // Loaded election metrics
-  isLoadingMetrics,    // Loading state
-  metricsError,        // Any errors during loading
+  filteredFeatures, // Features matching all filters
+  filterResult, // Detailed filter result with statistics
+  filterStatus, // Current filter status
+  metricsIndex, // Loaded election metrics
+  isLoadingMetrics, // Loading state
+  metricsError, // Any errors during loading
 } = useFilterEngine(features);
 ```
 
@@ -298,10 +303,10 @@ Get visible and hidden features for map rendering.
 
 ```typescript
 const {
-  visibleFeatures,     // Features that pass filters
-  hiddenFeatures,      // Filtered-out features
-  filterResult,        // Statistics
-  featureFilterMap,    // Map<featureId, isVisible>
+  visibleFeatures, // Features that pass filters
+  hiddenFeatures, // Filtered-out features
+  filterResult, // Statistics
+  featureFilterMap, // Map<featureId, isVisible>
 } = useMapFilteredFeatures(features, metricsIndex);
 ```
 
@@ -311,9 +316,9 @@ Get opacity and styling for a feature.
 
 ```typescript
 const {
-  isVisible,           // Does feature pass filters?
-  opacity,             // Visual opacity (1 or 0.15)
-  pointerEvents,       // Interaction state
+  isVisible, // Does feature pass filters?
+  opacity, // Visual opacity (1 or 0.15)
+  pointerEvents, // Interaction state
 } = useFilteredFeatureStyle(feature, metricsIndex);
 ```
 
@@ -323,13 +328,13 @@ Manual filter state management (advanced).
 
 ```typescript
 const {
-  filters,                  // Current filter config
-  updatePartyFilter,        // Update party filter
-  updateStateFilter,        // Update state filter
-  updateMarginFilter,       // Update margin filter
-  updateTotalVotesFilter,   // Update vote filter
-  updateWinnerVotesFilter,  // Update winner votes filter
-  resetFilters,             // Reset to defaults
+  filters, // Current filter config
+  updatePartyFilter, // Update party filter
+  updateStateFilter, // Update state filter
+  updateMarginFilter, // Update margin filter
+  updateTotalVotesFilter, // Update vote filter
+  updateWinnerVotesFilter, // Update winner votes filter
+  resetFilters, // Reset to defaults
 } = useFilterState();
 ```
 
@@ -340,11 +345,7 @@ const {
 Get min/max/mean/median for a field.
 
 ```typescript
-const stats = calculateFieldStatistics(
-  features,
-  metricsIndex,
-  (metrics) => metrics.total_votes
-);
+const stats = calculateFieldStatistics(features, metricsIndex, (metrics) => metrics.total_votes);
 
 // Returns: { min, max, mean, median, values }
 ```
@@ -364,7 +365,7 @@ Format vote numbers readably.
 
 ```typescript
 formatVoteCount(1500000); // "1.5M"
-formatVoteCount(150000);  // "150K"
+formatVoteCount(150000); // "150K"
 ```
 
 ### validateRangeValues
@@ -382,12 +383,7 @@ The filtering engine integrates with `useDashboardStore` automatically:
 
 ```typescript
 // Components can update filters via store
-const { 
-  toggleStateFilter,
-  togglePartyFilter,
-  setVoteRange,
-  setTurnoutRange,
-} = useDashboardStore();
+const { toggleStateFilter, togglePartyFilter, setVoteRange, setTurnoutRange } = useDashboardStore();
 
 // Hooks read filters from store
 const filters = useDashboardStore(selectAllFilters);
@@ -450,15 +446,15 @@ O(n) complexity per filter application where n = number of features.
 ### Unit Test Example
 
 ```typescript
-import { applyFilters } from '@/features/filters';
+import { applyFilters } from "@/features/filters";
 
-describe('Filter Engine', () => {
-  it('should filter features by party', () => {
+describe("Filter Engine", () => {
+  it("should filter features by party", () => {
     const filters = {
-      party: { type: 'set', values: new Set(['BJP']), enabled: true },
+      party: { type: "set", values: new Set(["BJP"]), enabled: true },
       // ... other filters disabled
     };
-    
+
     const result = applyFilters(features, filters, metricsIndex);
     expect(result.passedFeatures.length).toBeLessThan(features.length);
   });
@@ -470,14 +466,16 @@ describe('Filter Engine', () => {
 ### Adding a New Filter Type
 
 1. **Update FilterConfig type:**
+
 ```typescript
 export interface FilterConfig {
-  district?: SetFilterConfig;  // New filter
+  district?: SetFilterConfig; // New filter
   // ... existing filters
 }
 ```
 
 2. **Update createFilterPredicate:**
+
 ```typescript
 if (filters.district.enabled && filters.district.values.size > 0) {
   if (!filters.district.values.has(feature.properties.district)) {
@@ -487,6 +485,7 @@ if (filters.district.enabled && filters.district.values.size > 0) {
 ```
 
 3. **Create hook:**
+
 ```typescript
 export function useDistrictFilter(features, metricsIndex) {
   // Implementation

@@ -28,9 +28,7 @@ export function MapTooltip({
     <div className={`geojson-map-tooltip-card ${className ?? ""}`}>
       <div className="tooltip-header">
         <div className="tooltip-title">{regionName}</div>
-        {regionCode ? (
-          <div className="tooltip-subtitle">Code: {regionCode}</div>
-        ) : null}
+        {regionCode ? <div className="tooltip-subtitle">Code: {regionCode}</div> : null}
       </div>
 
       <div className="tooltip-details">

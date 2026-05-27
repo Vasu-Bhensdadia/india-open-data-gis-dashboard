@@ -44,21 +44,21 @@ export function extractGeoJSONMetadataKey(feature: GeoJSONFeature<Record<string,
   // Try multiple property name patterns (different data sources may use different names)
   const stateName = String(
     props.state_name ??
-    props.STATE_NAME ??
-    props.st_name ??
-    props.ST_NAME ??
-    props.state ??
-    "Unknown State"
+      props.STATE_NAME ??
+      props.st_name ??
+      props.ST_NAME ??
+      props.state ??
+      "Unknown State",
   );
 
   const constituencyName = String(
     props.constituency_name ??
-    props.CONSTITUENCY_NAME ??
-    props.pc_name ??
-    props.PC_NAME ??
-    props.name ??
-    props.NAME ??
-    "Unknown Constituency"
+      props.CONSTITUENCY_NAME ??
+      props.pc_name ??
+      props.PC_NAME ??
+      props.name ??
+      props.NAME ??
+      "Unknown Constituency",
   );
 
   return { stateName, constituencyName };
@@ -68,13 +68,8 @@ export function extractGeoJSONMetadataKey(feature: GeoJSONFeature<Record<string,
  * Create a predicate function from filter configuration.
  * Returns a function that checks if a feature matches the filters.
  */
-export function createFilterPredicate(
-  filters: FilterConfig,
-): FilterPredicate {
-  return (
-    feature: GeoJSONFeature<Record<string, unknown>>,
-    metrics: ElectionMetrics | null,
-  ) => {
+export function createFilterPredicate(filters: FilterConfig): FilterPredicate {
+  return (feature: GeoJSONFeature<Record<string, unknown>>, metrics: ElectionMetrics | null) => {
     // Party filter
     if (filters.party.enabled && filters.party.values.size > 0) {
       if (!metrics?.winner_party) return false;
@@ -135,9 +130,7 @@ export type DashboardFilterState = {
   winnerVotesFilter: WinnerVotesFilter;
 };
 
-export function mapDashboardFiltersToEngineConfig(
-  filters: DashboardFilterState,
-): FilterConfig {
+export function mapDashboardFiltersToEngineConfig(filters: DashboardFilterState): FilterConfig {
   return {
     party: {
       type: "set",

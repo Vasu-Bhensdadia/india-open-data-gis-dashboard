@@ -49,12 +49,7 @@ export function getLayerBounds(layer: unknown): LatLngBoundsTuple | null {
       typeof northEast.lat === "number" &&
       typeof northEast.lng === "number"
     ) {
-      return normalizeBounds([
-        southWest.lat,
-        southWest.lng,
-        northEast.lat,
-        northEast.lng,
-      ]);
+      return normalizeBounds([southWest.lat, southWest.lng, northEast.lat, northEast.lng]);
     }
   }
 

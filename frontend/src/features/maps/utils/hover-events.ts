@@ -27,14 +27,13 @@ export interface MapFeatureHoverActions<TProperties = Record<string, unknown>> {
   onLeaveFeature?: (feature: GeoJSONFeature<TProperties>) => void;
 }
 
-export interface MapFeatureInteractionActions<TProperties = Record<string, unknown>>
-  extends MapFeatureHoverActions<TProperties> {
+export interface MapFeatureInteractionActions<
+  TProperties = Record<string, unknown>,
+> extends MapFeatureHoverActions<TProperties> {
   onFeatureClick?: (feature: GeoJSONFeature<TProperties>, layer: unknown) => void;
 }
 
-export function createGeoJSONFeatureStyle(
-  baseStyle: GeoJSONPathOptions,
-): GeoJSONPathOptions {
+export function createGeoJSONFeatureStyle(baseStyle: GeoJSONPathOptions): GeoJSONPathOptions {
   return {
     ...baseStyle,
     className: GEOJSON_HOVERABLE_CLASS_NAME,
@@ -74,14 +73,9 @@ export function bindGeoJSONFeatureHover<
   );
 
   const selectedStyle = createGeoJSONFeatureStyle(
-    mergeGeoJSONFeatureStyles(
-      baseStyle,
-      getGeoJSONStyleForFeature(actions.selectedStyle, feature),
-    ),
+    mergeGeoJSONFeatureStyles(baseStyle, getGeoJSONStyleForFeature(actions.selectedStyle, feature)),
   );
-  const selectedRestoreStyle = createGeoJSONFeatureSelectionStyle(
-    selectedStyle,
-  );
+  const selectedRestoreStyle = createGeoJSONFeatureSelectionStyle(selectedStyle);
 
   const restoreLayerStyle = () => {
     if (typeof hoverableLayer.setStyle !== "function") {

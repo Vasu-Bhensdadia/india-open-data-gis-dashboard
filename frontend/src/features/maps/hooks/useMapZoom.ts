@@ -16,17 +16,8 @@ export interface MapZoomResult {
   resetMapView: () => void;
 }
 
-export function useMapZoom(
-  map: unknown,
-  config: MapZoomConfig,
-): MapZoomResult {
-  const {
-    defaultCenter,
-    defaultZoom,
-    maxZoom,
-    padding = [24, 24],
-    duration = 0.4,
-  } = config;
+export function useMapZoom(map: unknown, config: MapZoomConfig): MapZoomResult {
+  const { defaultCenter, defaultZoom, maxZoom, padding = [24, 24], duration = 0.4 } = config;
 
   const zoomToLayer = useCallback(
     (layer: unknown) => {

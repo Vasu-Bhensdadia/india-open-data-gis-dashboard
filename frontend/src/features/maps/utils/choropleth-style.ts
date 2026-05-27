@@ -1,4 +1,8 @@
-import { loadElectionMetrics, getElectionMetrics, getPartyColor } from "@/services/election-metrics.service";
+import {
+  loadElectionMetrics,
+  getElectionMetrics,
+  getPartyColor,
+} from "@/services/election-metrics.service";
 import type { ChoroplethMetricDescriptor, ChoroplethMetricKey } from "../types/choropleth";
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { LegendConfig } from "@/lib/visualization/legendTypes";
@@ -6,10 +10,7 @@ import type { LegendConfig } from "@/lib/visualization/legendTypes";
 export const CHOROPLETH_METRIC_CONFIG: Record<
   ChoroplethMetricKey,
   ChoroplethMetricDescriptor<Record<string, unknown>>
-> = {} as Record<
-  ChoroplethMetricKey,
-  ChoroplethMetricDescriptor<Record<string, unknown>>
->;
+> = {} as Record<ChoroplethMetricKey, ChoroplethMetricDescriptor<Record<string, unknown>>>;
 
 export async function createChoroplethMetricConfig(): Promise<
   Record<string, ChoroplethMetricDescriptor<Record<string, unknown>>>
@@ -18,10 +19,19 @@ export async function createChoroplethMetricConfig(): Promise<
 
   function getCleanMetrics(properties: Record<string, unknown>) {
     const stateName = String(
-      properties.state_name ?? properties.STATE_NAME ?? properties.st_name ?? properties.ST_NAME ?? ""
+      properties.state_name ??
+        properties.STATE_NAME ??
+        properties.st_name ??
+        properties.ST_NAME ??
+        "",
     );
     const constituencyName = String(
-      properties.constituency_name ?? properties.CONSTITUENCY_NAME ?? properties.pc_name ?? properties.PC_NAME ?? properties.name ?? ""
+      properties.constituency_name ??
+        properties.CONSTITUENCY_NAME ??
+        properties.pc_name ??
+        properties.PC_NAME ??
+        properties.name ??
+        "",
     );
     return getElectionMetrics(stateName, constituencyName, metrics);
   }
@@ -51,7 +61,9 @@ export async function createChoroplethMetricConfig(): Promise<
         "Telugu Desam": getPartyColor("Telugu Desam"),
         "Janata Dal (United)": getPartyColor("Janata Dal (United)"),
         "Shiv Sena": getPartyColor("Shiv Sena"),
-        "Yuvajana Sramika Rythu Congress Party": getPartyColor("Yuvajana Sramika Rythu Congress Party")
+        "Yuvajana Sramika Rythu Congress Party": getPartyColor(
+          "Yuvajana Sramika Rythu Congress Party",
+        ),
       },
       defaultCategoryColor: "#9ca3af",
       formatValue: (value) => String(value ?? "Unknown"),
@@ -116,7 +128,7 @@ export function getChoroplethMetricLegendConfig(
       type: "categorical",
       title: descriptor.label,
       items: [
-        { label: "Constituency Area", color: "#e2e8f0" } // Shows a blank square in the legend
+        { label: "Constituency Area", color: "#e2e8f0" }, // Shows a blank square in the legend
       ],
     };
   }
@@ -156,14 +168,13 @@ export function choroplethStyleResolver<
   feature: GeoJSONFeature<TProperties> | undefined,
   metric: ChoroplethMetricDescriptor<TProperties>,
 ): Record<string, unknown> {
-
   if (metric.key === "boundaryOnly") {
     return {
       fillColor: "#ffffff", // Completely solid white background
-      fillOpacity: 0,       // 100% solid, NOT transparent
-      color: "#2563eb",     // Strong blue border
-      weight: 1.2,          // Slightly thicker line to look like a KML layer
-      opacity: 1,           // Solid border line
+      fillOpacity: 0, // 100% solid, NOT transparent
+      color: "#2563eb", // Strong blue border
+      weight: 1.2, // Slightly thicker line to look like a KML layer
+      opacity: 1, // Solid border line
     };
   }
 
@@ -183,7 +194,10 @@ export function choroplethStyleResolver<
   let fillColor = defaultStyle.fillColor;
 
   if (metric.kind === "categorical") {
-    fillColor = metric.categoryColorMap[String(value)] ?? getPartyColor(String(value)) ?? metric.defaultCategoryColor;
+    fillColor =
+      metric.categoryColorMap[String(value)] ??
+      getPartyColor(String(value)) ??
+      metric.defaultCategoryColor;
   } else if (metric.kind === "numeric") {
     const numericValue = Number(value);
     const stops = metric.colorScale.stops;

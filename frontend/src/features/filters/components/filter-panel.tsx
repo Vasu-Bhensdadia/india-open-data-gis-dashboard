@@ -19,19 +19,20 @@ import {
   calculateFieldStatistics,
   formatVoteCount,
   formatPercentage,
-  formatRangeDisplay
+  formatRangeDisplay,
 } from "@/features/filters/utils/filter-utils";
 import { MultiSelectFilter, RangeSlider, FilterReset } from "./filter-components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export function FilterPanel() {
-  const { data, loading: isFeaturesLoading, error } = useIndiaGeoJSON(
-    "india_pc_2019",
-    {
-      cacheKey: "india-parliamentary-constituencies",
-    },
-  );
+  const {
+    data,
+    loading: isFeaturesLoading,
+    error,
+  } = useIndiaGeoJSON("india_pc_2019", {
+    cacheKey: "india-parliamentary-constituencies",
+  });
 
   const partyFilter = useDashboardStore(selectPartyFilter);
   const stateFilter = useDashboardStore(selectStateFilter);
@@ -48,41 +49,34 @@ export function FilterPanel() {
   const setTotalVotesRange = useDashboardStore((state) => state.setTotalVotesRange);
   const setTotalVotesFilterEnabled = useDashboardStore((state) => state.setTotalVotesFilterEnabled);
   const setWinnerVotesRange = useDashboardStore((state) => state.setWinnerVotesRange);
-  const setWinnerVotesFilterEnabled = useDashboardStore((state) => state.setWinnerVotesFilterEnabled);
+  const setWinnerVotesFilterEnabled = useDashboardStore(
+    (state) => state.setWinnerVotesFilterEnabled,
+  );
   const applyFilters = useDashboardStore((state) => state.applyFilters);
 
   const features = data?.features;
 
-  const {
-    filteredFeatures,
-    filterStatus,
-    metricsIndex,
-    isLoadingMetrics,
-  } = useFilterEngine(features ?? null);
-
-  const partyOptions = useMemo(
-    () => {
-      if (!features || !metricsIndex) return [];
-      return extractUniqueParties(features, metricsIndex).map((party) => ({
-        value: party.name,
-        label: party.name,
-        count: party.count,
-      }));
-    },
-    [features, metricsIndex],
+  const { filteredFeatures, filterStatus, metricsIndex, isLoadingMetrics } = useFilterEngine(
+    features ?? null,
   );
 
-  const stateOptions = useMemo(
-    () => {
-      if (!features) return [];
-      return extractUniqueStates(features).map((state) => ({
-        value: state.name,
-        label: state.name,
-        count: state.count,
-        }));
-    },
-    [features],
-  );
+  const partyOptions = useMemo(() => {
+    if (!features || !metricsIndex) return [];
+    return extractUniqueParties(features, metricsIndex).map((party) => ({
+      value: party.name,
+      label: party.name,
+      count: party.count,
+    }));
+  }, [features, metricsIndex]);
+
+  const stateOptions = useMemo(() => {
+    if (!features) return [];
+    return extractUniqueStates(features).map((state) => ({
+      value: state.name,
+      label: state.name,
+      count: state.count,
+    }));
+  }, [features]);
 
   const marginStats = useMemo(() => {
     if (!features || !metricsIndex) return null;
@@ -114,34 +108,40 @@ export function FilterPanel() {
   // UPDATE 2: Memoized arrays passed to RangeSliders to prevent re-renders in children components
   const marginValue = useMemo(
     () => [marginPercentageFilter.min, marginPercentageFilter.max] as [number, number],
-    [marginPercentageFilter.min, marginPercentageFilter.max]
+    [marginPercentageFilter.min, marginPercentageFilter.max],
   );
 
   const totalVotesValue = useMemo(
     () => [totalVotesFilter.min, totalVotesFilter.max] as [number, number],
-    [totalVotesFilter.min, totalVotesFilter.max]
+    [totalVotesFilter.min, totalVotesFilter.max],
   );
 
   const winnerVotesValue = useMemo(
     () => [winnerVotesFilter.min, winnerVotesFilter.max] as [number, number],
-    [winnerVotesFilter.min, winnerVotesFilter.max]
+    [winnerVotesFilter.min, winnerVotesFilter.max],
   );
 
   // UPDATE 3: Stabilized MultiSelect handlers to avoid dependency cycle triggers
-  const handlePartyChange = useCallback((selected: Set<string>) => {
-    setPartyFilter({
-      partyNames: selected,
-      enabled: selected.size > 0,
-    });
-  }, [setPartyFilter]);
+  const handlePartyChange = useCallback(
+    (selected: Set<string>) => {
+      setPartyFilter({
+        partyNames: selected,
+        enabled: selected.size > 0,
+      });
+    },
+    [setPartyFilter],
+  );
 
-  const handleStateChange = useCallback((selected: Set<string>) => {
-    setStateFilter({
-      stateCodes: selected,
-      stateNames: selected,
-      enabled: selected.size > 0,
-    });
-  }, [setStateFilter]);
+  const handleStateChange = useCallback(
+    (selected: Set<string>) => {
+      setStateFilter({
+        stateCodes: selected,
+        stateNames: selected,
+        enabled: selected.size > 0,
+      });
+    },
+    [setStateFilter],
+  );
 
   const isReady = !isFeaturesLoading && !isLoadingMetrics && !!data?.features && !!metricsIndex;
 
@@ -181,7 +181,8 @@ export function FilterPanel() {
           <div className="rounded-lg border border-zinc-200 bg-slate-50 p-3 text-sm text-slate-700">
             {isReady ? (
               <span>
-                Showing {filteredFeatures?.length ?? 0} of {data?.features.length ?? 0} constituencies
+                Showing {filteredFeatures?.length ?? 0} of {data?.features.length ?? 0}{" "}
+                constituencies
               </span>
             ) : (
               <span>Loading filter options...</span>
@@ -228,7 +229,11 @@ export function FilterPanel() {
           {totalVotesStats ? (
             <RangeSlider
               label="Total Votes"
-              description={formatRangeDisplay(totalVotesStats.min, totalVotesStats.max, formatVoteCount)}
+              description={formatRangeDisplay(
+                totalVotesStats.min,
+                totalVotesStats.max,
+                formatVoteCount,
+              )}
               minValue={totalVotesStats.min}
               maxValue={totalVotesStats.max}
               value={totalVotesValue}
@@ -237,13 +242,18 @@ export function FilterPanel() {
               enabled={totalVotesFilter.enabled}
               step={10000}
               formatter={formatVoteCount}
+              hideSliderTrack={true}
             />
           ) : null}
 
           {winnerVotesStats ? (
             <RangeSlider
               label="Winner Votes"
-              description={formatRangeDisplay(winnerVotesStats.min, winnerVotesStats.max, formatVoteCount)}
+              description={formatRangeDisplay(
+                winnerVotesStats.min,
+                winnerVotesStats.max,
+                formatVoteCount,
+              )}
               minValue={winnerVotesStats.min}
               maxValue={winnerVotesStats.max}
               value={winnerVotesValue}
@@ -252,6 +262,7 @@ export function FilterPanel() {
               enabled={winnerVotesFilter.enabled}
               step={10000}
               formatter={formatVoteCount}
+              hideSliderTrack={true}
             />
           ) : null}
         </div>
@@ -261,7 +272,10 @@ export function FilterPanel() {
             <p className="font-medium">Active filters</p>
             <div className="mt-2 space-y-1">
               {filterStatus.appliedFilters.map((filter) => (
-                <div key={filter.name} className="rounded-full bg-white px-3 py-1 text-xs text-blue-900 shadow-sm">
+                <div
+                  key={filter.name}
+                  className="rounded-full bg-white px-3 py-1 text-xs text-blue-900 shadow-sm"
+                >
                   {filter.description}
                 </div>
               ))}

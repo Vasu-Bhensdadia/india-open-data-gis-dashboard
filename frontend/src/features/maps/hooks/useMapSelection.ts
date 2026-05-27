@@ -8,14 +8,8 @@ import {
   getGeoJSONFeatureIdentifier,
   selectedGeoJSONFeatureStyle,
 } from "../utils/selection-style";
-import type {
-  GeoJSONStyleResolver,
-  GeoJSONStyleSource,
-} from "../utils/style-utils";
-import {
-  createGeoJSONStyleResolver,
-  getGeoJSONStyleForFeature,
-} from "../utils/style-utils";
+import type { GeoJSONStyleResolver, GeoJSONStyleSource } from "../utils/style-utils";
+import { createGeoJSONStyleResolver, getGeoJSONStyleForFeature } from "../utils/style-utils";
 
 type SelectableLeafletLayer<TProperties> = {
   _geojsonSelectionBound?: boolean;
@@ -44,9 +38,7 @@ export interface MapSelectionResult<TProperties = Record<string, unknown>> {
 
 export function useMapSelection<
   TProperties extends Record<string, unknown> = Record<string, unknown>,
->(
-  config?: MapSelectionConfig<TProperties>,
-): MapSelectionResult<TProperties> {
+>(config?: MapSelectionConfig<TProperties>): MapSelectionResult<TProperties> {
   const {
     baseStyle: configBaseStyle,
     selectedStyle: configSelectedStyle,
@@ -56,9 +48,7 @@ export function useMapSelection<
   } = config ?? {};
 
   const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
-  const [selectedFeature, setSelectedFeature] = useState<
-    GeoJSONFeature<TProperties> | null
-  >(null);
+  const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature<TProperties> | null>(null);
   const selectedLayerRef = useRef<SelectableLeafletLayer<TProperties> | null>(null);
   const selectedFeatureRef = useRef<GeoJSONFeature<TProperties> | null>(null);
 
@@ -68,12 +58,11 @@ export function useMapSelection<
   );
 
   const selectedStyle = useMemo(
-    () =>
-      (feature: GeoJSONFeature<TProperties>) =>
-        mergeGeoJSONFeatureStyles(
-          mergeGeoJSONFeatureStyles(baseStyle(feature), selectedGeoJSONFeatureStyle),
-          getGeoJSONStyleForFeature(configSelectedStyle, feature),
-        ),
+    () => (feature: GeoJSONFeature<TProperties>) =>
+      mergeGeoJSONFeatureStyles(
+        mergeGeoJSONFeatureStyles(baseStyle(feature), selectedGeoJSONFeatureStyle),
+        getGeoJSONStyleForFeature(configSelectedStyle, feature),
+      ),
     [baseStyle, configSelectedStyle],
   );
 
@@ -96,11 +85,13 @@ export function useMapSelection<
     if (selectedLayer.feature) {
       selectedLayer.setStyle(baseStyle(selectedLayer.feature));
     } else {
-      selectedLayer.setStyle(baseStyle({
-        type: "Feature",
-        geometry: null,
-        properties: {} as TProperties,
-      }));
+      selectedLayer.setStyle(
+        baseStyle({
+          type: "Feature",
+          geometry: null,
+          properties: {} as TProperties,
+        }),
+      );
     }
 
     selectedLayerRef.current = null;
@@ -150,10 +141,7 @@ export function useMapSelection<
         return;
       }
 
-      if (
-        selectedFeatureId === featureId &&
-        selectedLayerRef.current === hoverableLayer
-      ) {
+      if (selectedFeatureId === featureId && selectedLayerRef.current === hoverableLayer) {
         return;
       }
 
@@ -164,11 +152,13 @@ export function useMapSelection<
         if (previousLayer.feature) {
           previousLayer.setStyle(baseStyle(previousLayer.feature));
         } else {
-          previousLayer.setStyle(baseStyle({
-            type: "Feature",
-            geometry: null,
-            properties: {} as TProperties,
-          }));
+          previousLayer.setStyle(
+            baseStyle({
+              type: "Feature",
+              geometry: null,
+              properties: {} as TProperties,
+            }),
+          );
         }
         if (selectedFeatureRef.current) {
           onDeselectFeature?.(selectedFeatureRef.current);
@@ -176,16 +166,21 @@ export function useMapSelection<
       }
 
       hoverableLayer._geojsonSelected = true;
-      hoverableLayer.setStyle(
-        createGeoJSONFeatureSelectionStyle(selectedStyle(feature)),
-      );
+      hoverableLayer.setStyle(createGeoJSONFeatureSelectionStyle(selectedStyle(feature)));
       selectedLayerRef.current = hoverableLayer;
       selectedFeatureRef.current = feature;
       setSelectedFeatureId(featureId);
       setSelectedFeature(feature);
       onSelectFeature?.(feature);
     },
-    [baseStyle, onDeselectFeature, onSelectFeature, resolveFeatureId, selectedFeatureId, selectedStyle],
+    [
+      baseStyle,
+      onDeselectFeature,
+      onSelectFeature,
+      resolveFeatureId,
+      selectedFeatureId,
+      selectedStyle,
+    ],
   );
 
   return {

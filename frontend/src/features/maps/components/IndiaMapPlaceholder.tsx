@@ -5,12 +5,9 @@ import dynamic from "next/dynamic";
 
 import { MapProvider } from "@/features/maps/providers/MapProvider";
 
-const LeafletMap = dynamic(
-  () => import("./LeafletMap").then((mod) => mod.LeafletMap),
-  {
-    ssr: false,
-  }
-);
+const LeafletMap = dynamic(() => import("./LeafletMap").then((mod) => mod.LeafletMap), {
+  ssr: false,
+});
 
 export function IndiaMapPlaceholder() {
   return (

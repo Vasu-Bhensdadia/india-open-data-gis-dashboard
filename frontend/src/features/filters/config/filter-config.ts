@@ -168,7 +168,10 @@ export const INDIAN_STATES = [
 /**
  * Factory function to create a party filter.
  */
-export function createPartyFilter(parties: string[], enabled: boolean = true): FilterConfig["party"] {
+export function createPartyFilter(
+  parties: string[],
+  enabled: boolean = true,
+): FilterConfig["party"] {
   return {
     type: "set",
     values: new Set(parties),
@@ -179,7 +182,10 @@ export function createPartyFilter(parties: string[], enabled: boolean = true): F
 /**
  * Factory function to create a state filter.
  */
-export function createStateFilter(states: string[], enabled: boolean = true): FilterConfig["state"] {
+export function createStateFilter(
+  states: string[],
+  enabled: boolean = true,
+): FilterConfig["state"] {
   return {
     type: "set",
     values: new Set(states),

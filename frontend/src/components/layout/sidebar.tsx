@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Map,
-  BarChart3,
-  Filter,
-  Settings,
-  HelpCircle,
-} from "lucide-react";
+import { LayoutDashboard, Map, BarChart3, Filter, Settings, HelpCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -82,7 +75,7 @@ export function DashboardSidebar() {
                   isActive={isActive}
                   className={cn(
                     "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100",
-                    isActive && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    isActive && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
                   )}
                 >
                   <Link href={item.href}>
@@ -109,7 +102,7 @@ export function DashboardSidebar() {
                   isActive={isActive}
                   className={cn(
                     "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100",
-                    isActive && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    isActive && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
                   )}
                 >
                   <Link href={item.href}>

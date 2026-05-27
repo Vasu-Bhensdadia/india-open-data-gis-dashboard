@@ -33,6 +33,7 @@ export interface RangeSliderProps {
   enabled: boolean;
   step?: number;
   formatter?: (value: number) => string;
+  hideSliderTrack?: boolean;
 }
 
 export function RangeSlider({
@@ -46,6 +47,7 @@ export function RangeSlider({
   enabled,
   step = 1,
   formatter = (v) => v.toString(),
+  hideSliderTrack = false,
 }: RangeSliderProps) {
   return (
     <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4">
@@ -91,24 +93,28 @@ export function RangeSlider({
           </div>
 
           {/* Range slider visualization */}
-          <input
-            type="range"
-            min={minValue}
-            max={maxValue}
-            step={step}
-            value={value[0]}
-            onChange={(e) => onChange(Number(e.target.value), value[1])}
-            className="w-full"
-          />
-          <input
-            type="range"
-            min={minValue}
-            max={maxValue}
-            step={step}
-            value={value[1]}
-            onChange={(e) => onChange(value[0], Number(e.target.value))}
-            className="w-full"
-          />
+          {!hideSliderTrack && (
+            <>
+              <input
+                type="range"
+                min={minValue}
+                max={maxValue}
+                step={step}
+                value={value[0]}
+                onChange={(e) => onChange(Number(e.target.value), value[1])}
+                className="w-full"
+              />
+              <input
+                type="range"
+                min={minValue}
+                max={maxValue}
+                step={step}
+                value={value[1]}
+                onChange={(e) => onChange(value[0], Number(e.target.value))}
+                className="w-full"
+              />
+            </>
+          )}
         </div>
       )}
     </div>
@@ -196,6 +202,81 @@ export function MultiSelectFilter({
 }
 
 /**
+ * Single-select filter component for categorical values.
+ * Renders as a dropdown to enforce a single choice.
+ */
+export interface SingleSelectFilterProps {
+  label: string;
+  description?: string;
+  options: Array<{ value: string; label: string; count?: number }>;
+  selectedValues: Set<string>;
+  onChange: (selected: Set<string>) => void;
+  onEnable: (enabled: boolean) => void;
+  enabled: boolean;
+}
+
+export function SingleSelectFilter({
+  label,
+  description,
+  options,
+  selectedValues,
+  onChange,
+  onEnable,
+  enabled,
+}: SingleSelectFilterProps) {
+  // Extract the single selected value from the Set, or default to an empty string ("All")
+  const currentValue = selectedValues.size > 0 ? Array.from(selectedValues)[0] : "";
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "") {
+      onChange(new Set()); // Clear selection if they pick the default option
+    } else {
+      onChange(new Set([val])); // Wrap the single selection in a Set for the store
+    }
+  };
+
+  return (
+    <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium text-zinc-900">{label}</label>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => onEnable(e.target.checked)}
+          className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-600"
+        />
+      </div>
+
+      {description && <p className="text-xs text-zinc-500">{description}</p>}
+
+      {enabled && (
+        <div className="space-y-2 mt-2">
+          <select
+            value={currentValue}
+            onChange={handleSelectChange}
+            className="w-full rounded-md border border-zinc-300 p-2 text-sm text-zinc-900 bg-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          >
+            <option value="" className="text-zinc-900">
+              -- All Parties --
+            </option>
+            {options.map((option, index) => (
+              <option
+                key={option.value ?? `${option.label}-${index}`}
+                value={option.value}
+                className="text-zinc-900"
+              >
+                {option.label} {option.count !== undefined ? `(${option.count})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * Filter status display component.
  */
 export interface FilterStatusProps {
@@ -232,12 +313,14 @@ export function FilterStatus({ features, metricsIndex }: FilterStatusProps) {
       <div className="text-sm font-medium text-zinc-900">Filter Status</div>
       <div className="space-y-1 text-sm text-zinc-600">
         <div>Total: {impact.totalFeatures} constituencies</div>
-        <div>Visible: {impact.matchedFeatures} ({impact.matchPercentage.toFixed(1)}%)</div>
-        <div>Filtered: {impact.filteredFeatures} ({impact.filterPercentage.toFixed(1)}%)</div>
+        <div>
+          Visible: {impact.matchedFeatures} ({impact.matchPercentage.toFixed(1)}%)
+        </div>
+        <div>
+          Filtered: {impact.filteredFeatures} ({impact.filterPercentage.toFixed(1)}%)
+        </div>
       </div>
-      {impact.filteredFeatures > 0 && (
-        <p className="text-xs text-amber-600">{impact.message}</p>
-      )}
+      {impact.filteredFeatures > 0 && <p className="text-xs text-amber-600">{impact.message}</p>}
     </div>
   );
 }
@@ -298,4 +381,3 @@ export function AppliedFilters() {
     </div>
   );
 }
-

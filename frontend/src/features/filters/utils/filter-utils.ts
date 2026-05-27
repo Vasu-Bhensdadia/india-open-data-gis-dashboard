@@ -31,7 +31,9 @@ export function calculateFieldStatistics(
   for (const feature of features) {
     const props = feature.properties || {};
     const stateName = String(props.state_name ?? props.STATE_NAME ?? props.state ?? "");
-    const constituencyName = String(props.constituency_name ?? props.CONSTITUENCY_NAME ?? props.name ?? "");
+    const constituencyName = String(
+      props.constituency_name ?? props.CONSTITUENCY_NAME ?? props.name ?? "",
+    );
 
     const key = `${stateName.toUpperCase()}|${constituencyName.toUpperCase()}`;
     const metrics = metricsIndex[key];
@@ -70,7 +72,9 @@ export function extractUniqueParties(
   for (const feature of features) {
     const props = feature.properties || {};
     const stateName = String(props.state_name ?? props.STATE_NAME ?? props.state ?? "");
-    const constituencyName = String(props.constituency_name ?? props.CONSTITUENCY_NAME ?? props.name ?? "");
+    const constituencyName = String(
+      props.constituency_name ?? props.CONSTITUENCY_NAME ?? props.name ?? "",
+    );
 
     const key = `${stateName.toUpperCase()}|${constituencyName.toUpperCase()}`;
     const metrics = metricsIndex[key];
@@ -128,7 +132,10 @@ export function formatPercentage(value: number, decimals: number = 1): string {
 /**
  * Get human-readable filter description.
  */
-export function getFilterDescription(filterType: string, value: string | number | string[]): string {
+export function getFilterDescription(
+  filterType: string,
+  value: string | number | string[],
+): string {
   switch (filterType) {
     case "party":
       if (Array.isArray(value)) {

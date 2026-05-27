@@ -56,29 +56,17 @@ export interface SelectedFeatureInfo {
   constituencyNumber: string | null;
 }
 
-export function getSelectedFeatureInfo<
-  TProperties extends Record<string, unknown>,
->(
+export function getSelectedFeatureInfo<TProperties extends Record<string, unknown>>(
   feature: GeoJSONFeature<TProperties>,
 ): SelectedFeatureInfo {
-  const properties =
-    feature.properties ?? ({} as Record<string, unknown>);
+  const properties = feature.properties ?? ({} as Record<string, unknown>);
 
-  const stateName =
-    resolveProperty(properties, STATE_NAME_KEYS) ??
-    "Unknown state";
+  const stateName = resolveProperty(properties, STATE_NAME_KEYS) ?? "Unknown state";
 
   const constituencyName =
-    resolveProperty(
-      properties,
-      CONSTITUENCY_NAME_KEYS,
-    ) ?? "Unknown constituency";
+    resolveProperty(properties, CONSTITUENCY_NAME_KEYS) ?? "Unknown constituency";
 
-  const constituencyNumber =
-    resolveProperty(
-      properties,
-      CONSTITUENCY_NUMBER_KEYS,
-    ) ?? null;
+  const constituencyNumber = resolveProperty(properties, CONSTITUENCY_NUMBER_KEYS) ?? null;
 
   return {
     stateName,

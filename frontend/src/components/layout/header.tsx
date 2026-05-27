@@ -34,10 +34,7 @@ export function Header({ showMenuButton = true }: HeaderProps) {
             </Button>
           )}
 
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm font-semibold text-zinc-950"
-          >
+          <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-zinc-950">
             <span className="flex size-8 items-center justify-center rounded-md bg-emerald-700 text-xs font-bold text-white">
               IN
             </span>

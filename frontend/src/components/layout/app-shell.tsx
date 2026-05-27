@@ -10,9 +10,5 @@ type AppShellProps = Readonly<{
  * For dashboard-specific layout, use components/layout/dashboard-layout.tsx
  */
 export function AppShell({ children }: AppShellProps) {
-  return (
-    <div className="min-h-svh bg-neutral-50 text-zinc-950">
-      {children}
-    </div>
-  );
+  return <div className="min-h-svh bg-neutral-50 text-zinc-950">{children}</div>;
 }

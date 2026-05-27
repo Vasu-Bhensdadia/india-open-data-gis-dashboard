@@ -4,12 +4,7 @@ import type { GeoJSONFeature } from "@/types/geojson";
 
 export type MapViewLevel = "country" | "state" | "district" | "constituency";
 
-export type MapInteractionMode =
-  | "idle"
-  | "hover"
-  | "select"
-  | "zoom"
-  | "drilldown";
+export type MapInteractionMode = "idle" | "hover" | "select" | "zoom" | "drilldown";
 
 export interface MapInteractionState {
   mode: MapInteractionMode;
@@ -66,9 +61,14 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
       hoveredFeature: feature,
       activeRegionMetadata: metadata
         ? {
-            featureId: metadata.featureId ?? state.activeRegionMetadata?.featureId ?? feature?.id?.toString() ?? "",
+            featureId:
+              metadata.featureId ??
+              state.activeRegionMetadata?.featureId ??
+              feature?.id?.toString() ??
+              "",
             regionName:
-              metadata.regionName ?? state.activeRegionMetadata?.regionName ??
+              metadata.regionName ??
+              state.activeRegionMetadata?.regionName ??
               (feature?.properties?.name ? String(feature.properties.name) : "Unknown region"),
             regionCode: metadata.regionCode ?? state.activeRegionMetadata?.regionCode,
             level: metadata.level ?? state.activeRegionMetadata?.level ?? "state",
@@ -82,7 +82,8 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
       mapInteraction: {
         ...state.mapInteraction,
         mode: feature ? "hover" : state.mapInteraction.mode,
-        lastInteractedFeatureId: feature?.id?.toString() ?? state.mapInteraction.lastInteractedFeatureId,
+        lastInteractedFeatureId:
+          feature?.id?.toString() ?? state.mapInteraction.lastInteractedFeatureId,
       },
     })),
 
@@ -93,13 +94,18 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
         metadata || feature
           ? {
               featureId:
-                metadata?.featureId ?? state.activeRegionMetadata?.featureId ?? feature?.id?.toString() ?? "",
+                metadata?.featureId ??
+                state.activeRegionMetadata?.featureId ??
+                feature?.id?.toString() ??
+                "",
               regionName:
-                metadata?.regionName ?? state.activeRegionMetadata?.regionName ??
+                metadata?.regionName ??
+                state.activeRegionMetadata?.regionName ??
                 (feature?.properties?.name ? String(feature.properties.name) : "Unknown region"),
               regionCode: metadata?.regionCode ?? state.activeRegionMetadata?.regionCode,
               level: metadata?.level ?? state.activeRegionMetadata?.level ?? "state",
-              parentRegionId: metadata?.parentRegionId ?? state.activeRegionMetadata?.parentRegionId,
+              parentRegionId:
+                metadata?.parentRegionId ?? state.activeRegionMetadata?.parentRegionId,
               properties: {
                 ...(state.activeRegionMetadata?.properties ?? {}),
                 ...(metadata?.properties ?? {}),
@@ -109,7 +115,8 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
       mapInteraction: {
         ...state.mapInteraction,
         mode: feature ? "select" : state.mapInteraction.mode,
-        lastInteractedFeatureId: feature?.id?.toString() ?? state.mapInteraction.lastInteractedFeatureId,
+        lastInteractedFeatureId:
+          feature?.id?.toString() ?? state.mapInteraction.lastInteractedFeatureId,
       },
     })),
 
@@ -118,7 +125,8 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
       activeRegionMetadata: metadata,
       mapInteraction: {
         ...state.mapInteraction,
-        lastInteractedFeatureId: metadata?.featureId ?? state.mapInteraction.lastInteractedFeatureId,
+        lastInteractedFeatureId:
+          metadata?.featureId ?? state.mapInteraction.lastInteractedFeatureId,
       },
     })),
 
@@ -141,8 +149,10 @@ export const useMapStore = create<GISInteractionState>()((set) => ({
 
 export const selectHoveredFeature = (state: GISInteractionState) => state.hoveredFeature;
 export const selectSelectedFeature = (state: GISInteractionState) => state.selectedFeature;
-export const selectActiveRegionMetadata = (state: GISInteractionState) => state.activeRegionMetadata;
+export const selectActiveRegionMetadata = (state: GISInteractionState) =>
+  state.activeRegionMetadata;
 export const selectMapInteractionState = (state: GISInteractionState) => state.mapInteraction;
 export const selectIsMapDragging = (state: GISInteractionState) => state.mapInteraction.isDragging;
 export const selectMapViewLevel = (state: GISInteractionState) => state.mapInteraction.viewLevel;
-export const selectIsResettingView = (state: GISInteractionState) => state.mapInteraction.isResettingView;
+export const selectIsResettingView = (state: GISInteractionState) =>
+  state.mapInteraction.isResettingView;

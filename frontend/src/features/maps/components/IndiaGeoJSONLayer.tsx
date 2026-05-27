@@ -8,18 +8,18 @@ import type { GeoJsonObject } from "geojson";
 import { useFitBoundsFromLayer } from "../hooks/useMapBounds";
 import { useMapFeatureInteractions } from "../hooks/useMapFeatureInteractions";
 import { choroplethStyleResolver } from "../utils/choropleth-style";
+import { normalizeKey } from "@/services/election-metrics.service";
 
 import type {
   GeoJSONFeatureCollection,
   GeoJSONFeature,
   IndiaStateGeoJSONProperties,
 } from "@/types/geojson";
-import type {
-  ChoroplethMetricDescriptor,
-} from "../types/choropleth";
+import type { ChoroplethMetricDescriptor } from "../types/choropleth";
 
 interface IndiaGeoJSONLayerProps {
   data: GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>;
+  filteredFeatures?: GeoJSONFeature<IndiaStateGeoJSONProperties>[] | null;
   metric: ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>;
   onSelectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
   onDeselectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
@@ -27,6 +27,7 @@ interface IndiaGeoJSONLayerProps {
 
 export function IndiaGeoJSONLayer({
   data,
+  filteredFeatures,
   metric,
   onSelectFeature,
   onDeselectFeature,
@@ -34,10 +35,50 @@ export function IndiaGeoJSONLayer({
   const map = useMap();
   const layerRef = useRef<any>(null);
 
+  const matchedKeys = useMemo(() => {
+    if (!filteredFeatures || !data.features || filteredFeatures.length === data.features.length) {
+      return null;
+    }
+    const keys = new Set<string>();
+    for (const f of filteredFeatures) {
+      const props = (f.properties || {}) as Record<string, any>;
+      const stateName = String(
+        props.state_name ?? props.STATE_NAME ?? props.st_name ?? props.ST_NAME ?? "",
+      );
+      const constName = String(
+        props.constituency_name ?? props.CONSTITUENCY_NAME ?? props.pc_name ?? props.PC_NAME ?? "",
+      );
+      keys.add(normalizeKey(stateName, constName));
+    }
+    return keys;
+  }, [filteredFeatures, data.features]);
+
+  // 1. Define our dynamic choropleth style
   // 1. Define our dynamic choropleth style
   const choroplethStyle = useCallback(
-    (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => choroplethStyleResolver(feature, metric),
-    [metric]
+    (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => {
+      const baseStyle = choroplethStyleResolver(feature, metric);
+
+      if (matchedKeys) {
+        const props = (feature.properties || {}) as Record<string, any>;
+        const stateName = String(
+          props.state_name ?? props.STATE_NAME ?? props.st_name ?? props.ST_NAME ?? "",
+        );
+        const constName = String(
+          props.constituency_name ??
+            props.CONSTITUENCY_NAME ??
+            props.pc_name ??
+            props.PC_NAME ??
+            "",
+        );
+
+        if (!matchedKeys.has(normalizeKey(stateName, constName))) {
+          return { ...baseStyle, fillColor: "#ffffff", fillOpacity: 0 };
+        }
+      }
+      return baseStyle;
+    },
+    [metric, matchedKeys],
   );
 
   // 2. Pass it into baseStyle so the interaction hooks know what color to revert to
@@ -70,7 +111,7 @@ export function IndiaGeoJSONLayer({
 
   return (
     <GeoJSON
-      key={`${metric.key}-${styledData.features?.length || 0}`}
+      key={`${metric.key}-${filteredFeatures ? filteredFeatures.length : "all"}`}
       data={styledData as GeoJsonObject}
       ref={layerRef}
       pane="choroplethPane"

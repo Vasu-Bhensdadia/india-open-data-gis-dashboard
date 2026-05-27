@@ -2,9 +2,7 @@ import { useCallback } from "react";
 
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { GeoJSONPathOptions } from "../utils/hover-style";
-import type {
-  GeoJSONStyleSource,
-} from "../utils/style-utils";
+import type { GeoJSONStyleSource } from "../utils/style-utils";
 import { bindGeoJSONFeatureInteractions } from "../utils/hover-events";
 import { useMapHover } from "./useMapHover";
 import { useMapSelection } from "./useMapSelection";
@@ -97,7 +95,16 @@ export function useMapFeatureInteractions<
         },
       });
     },
-    [hover.baseStyle, hover.hoverStyle, onHoverFeature, onLeaveFeature, onZoomFeature, selectFeature, selectionSelectedStyle, zoomToLayer],
+    [
+      hover.baseStyle,
+      hover.hoverStyle,
+      onHoverFeature,
+      onLeaveFeature,
+      onZoomFeature,
+      selectFeature,
+      selectionSelectedStyle,
+      zoomToLayer,
+    ],
   );
 
   return {

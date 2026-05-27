@@ -11,14 +11,8 @@ import {
   mergeGeoJSONFeatureStyles,
 } from "../utils/hover-style";
 import { createGeoJSONFeatureSelectionStyle } from "../utils/selection-style";
-import type {
-  GeoJSONStyleResolver,
-  GeoJSONStyleSource,
-} from "../utils/style-utils";
-import {
-  createGeoJSONStyleResolver,
-  getGeoJSONStyleForFeature,
-} from "../utils/style-utils";
+import type { GeoJSONStyleResolver, GeoJSONStyleSource } from "../utils/style-utils";
+import { createGeoJSONStyleResolver, getGeoJSONStyleForFeature } from "../utils/style-utils";
 
 export interface MapHoverConfig<TProperties = Record<string, unknown>> {
   baseStyle?: GeoJSONStyleSource<TProperties>;
@@ -33,9 +27,7 @@ export interface MapHoverResult<TProperties = Record<string, unknown>> {
   selectedStyle: GeoJSONStyleResolver<TProperties>;
 }
 
-export function useMapHover<
-  TProperties extends Record<string, unknown> = Record<string, unknown>,
->(
+export function useMapHover<TProperties extends Record<string, unknown> = Record<string, unknown>>(
   config?: MapHoverConfig<TProperties>,
 ): MapHoverResult<TProperties> {
   const {
@@ -56,24 +48,22 @@ export function useMapHover<
   );
 
   const hoverStyle = useMemo(
-    () =>
-      (feature: GeoJSONFeature<TProperties>) =>
-        mergeGeoJSONFeatureStyles(
-          mergeGeoJSONFeatureStyles(baseStyle(feature), hoverGeoJSONFeatureStyle),
-          getGeoJSONStyleForFeature(configHoverStyle, feature),
-        ),
+    () => (feature: GeoJSONFeature<TProperties>) =>
+      mergeGeoJSONFeatureStyles(
+        mergeGeoJSONFeatureStyles(baseStyle(feature), hoverGeoJSONFeatureStyle),
+        getGeoJSONStyleForFeature(configHoverStyle, feature),
+      ),
     [baseStyle, configHoverStyle],
   );
 
   const selectedStyle = useMemo(
-    () =>
-      (feature: GeoJSONFeature<TProperties>) =>
-        createGeoJSONFeatureSelectionStyle(
-          mergeGeoJSONFeatureStyles(
-            baseStyle(feature),
-            getGeoJSONStyleForFeature(configSelectedStyle, feature),
-          ),
+    () => (feature: GeoJSONFeature<TProperties>) =>
+      createGeoJSONFeatureSelectionStyle(
+        mergeGeoJSONFeatureStyles(
+          baseStyle(feature),
+          getGeoJSONStyleForFeature(configSelectedStyle, feature),
         ),
+      ),
     [baseStyle, configSelectedStyle],
   );
 

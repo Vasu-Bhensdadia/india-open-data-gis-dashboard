@@ -11,19 +11,28 @@ import { LeafletControl } from "./LeafletControl";
 import { useIndiaGeoJSON } from "../hooks/useIndiaGeoJSON";
 import { useMapZoom } from "../hooks/useMapZoom";
 import { useFilteredGeoJSON } from "@/features/filters";
-import { getChoroplethMetricLegendConfig } from "../utils/choropleth-style";
-import { useChoroplethModeStore } from "../choropleth.store";
+import {
+  createChoroplethMetricConfig,
+  getChoroplethMetricLegendConfig,
+} from "../utils/choropleth-style";
 import { ChoroplethMetricSelector } from "./ChoroplethMetricSelector";
 import MapLegend from "@/components/map-legend/MapLegend";
+import {
+  selectIsChoroplethConfigLoaded,
+  selectSelectedFeature,
+  selectSelectedMetricKey,
+  useDashboardStore,
+} from "@/store";
 
 import type {
   GeoJSONFeature,
   GeoJSONFeatureCollection,
   IndiaStateGeoJSONProperties,
 } from "@/types/geojson";
-import type { ChoroplethMetricDescriptor } from "../types/choropleth";
+import type { ChoroplethMetricDescriptor, ChoroplethMetricKey } from "../types/choropleth";
 
 import { getSelectedFeatureInfo } from "../utils/feature-info";
+import { normalizeKey } from "@/services/election-metrics.service";
 
 const DEFAULT_CENTER: [number, number] = [22.0, 78.0];
 const DEFAULT_ZOOM = 5;
@@ -78,35 +87,23 @@ function SelectedFeatureInfoPanel({
 }: {
   feature: GeoJSONFeature<IndiaStateGeoJSONProperties>;
 }) {
-  const {
-    stateName,
-    constituencyName,
-    constituencyNumber,
-  } = getSelectedFeatureInfo(feature);
+  const { stateName, constituencyName, constituencyNumber } = getSelectedFeatureInfo(feature);
 
   return (
     <div className="absolute right-4 top-16 z-[1200] w-60 rounded-lg bg-slate-900/85 p-3 text-white shadow-xl backdrop-blur-sm">
       <div className="space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">
-            State
-          </p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400">State</p>
 
-          <p className="mt-1 text-base font-semibold leading-tight">
-            {stateName}
-          </p>
+          <p className="mt-1 text-base font-semibold leading-tight">{stateName}</p>
         </div>
 
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">
-            Constituency
-          </p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400">Constituency</p>
 
           <p className="mt-1 text-sm font-medium leading-tight">
             {constituencyName}
-            {constituencyNumber
-              ? ` (${constituencyNumber})`
-              : ""}
+            {constituencyNumber ? ` (${constituencyNumber})` : ""}
           </p>
         </div>
       </div>
@@ -115,12 +112,9 @@ function SelectedFeatureInfoPanel({
 }
 
 export function LeafletMap() {
-  const { data, loading, error } = useIndiaGeoJSON(
-    "india_pc_2019",
-    {
-      cacheKey: "india-parliamentary-constituencies",
-    },
-  );
+  const { data, loading, error } = useIndiaGeoJSON("india_pc_2019", {
+    cacheKey: "india-parliamentary-constituencies",
+  });
 
   // ---> ADD THESE LINES: Fetch the state boundaries <---
   const [stateBoundaries, setStateBoundaries] = useState<GeoJsonObject | null>(null);
@@ -133,43 +127,85 @@ export function LeafletMap() {
   }, []);
   // ----------------------------------------------------
 
-  const { selectedMetricKey, metricConfig, isConfigLoaded, loadConfig } = useChoroplethModeStore();
+  const selectedMetricKey = useDashboardStore(selectSelectedMetricKey);
+  const metricConfig = useDashboardStore((state) => state.metricConfig);
+  const isConfigLoaded = useDashboardStore(selectIsChoroplethConfigLoaded);
+  const setMetricConfig = useDashboardStore((state) => state.setMetricConfig);
+  const selectedFeature = useDashboardStore(
+    selectSelectedFeature,
+  ) as GeoJSONFeature<IndiaStateGeoJSONProperties> | null;
+  const selectConstituency = useDashboardStore((state) => state.selectConstituency);
+  const deselectConstituency = useDashboardStore((state) => state.deselectConstituency);
 
   useEffect(() => {
-    loadConfig();
-  }, [loadConfig]);
+    if (isConfigLoaded) {
+      return;
+    }
 
-  const selectedMetric = useMemo(
-    () => {
-      if (!isConfigLoaded) return undefined;
+    let cancelled = false;
 
-      return (
-        metricConfig[selectedMetricKey] ??
-        metricConfig.marginPercentage ??
-        Object.values(metricConfig)[0]
-      );
-    },
-    [selectedMetricKey, metricConfig, isConfigLoaded],
-  );
+    void createChoroplethMetricConfig()
+      .then((config) => {
+        if (!cancelled) {
+          setMetricConfig(
+            config as Record<
+              ChoroplethMetricKey,
+              ChoroplethMetricDescriptor<Record<string, unknown>>
+            >,
+          );
+        }
+      })
+      .catch((loadError) => {
+        console.error("Failed to load choropleth metric configuration", loadError);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isConfigLoaded, setMetricConfig]);
+
+  const selectedMetric = useMemo(() => {
+    if (!isConfigLoaded) return undefined;
+
+    return (
+      metricConfig[selectedMetricKey] ??
+      metricConfig.boundaryOnly ??
+      Object.values(metricConfig).find(Boolean)
+    );
+  }, [selectedMetricKey, metricConfig, isConfigLoaded]);
 
   const selectedMetricLegendConfig = useMemo(
-    () => selectedMetric
-      ? getChoroplethMetricLegendConfig(selectedMetric)
-      : undefined,
+    () => (selectedMetric ? getChoroplethMetricLegendConfig(selectedMetric) : undefined),
     [selectedMetric],
   );
 
   const filteredGeoJSON = useFilteredGeoJSON(
     data as GeoJSONFeatureCollection<Record<string, unknown>> | null,
   );
-  const visibleGeoJSON = filteredGeoJSON
-    ? (filteredGeoJSON as GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>)
-    : data;
+  // const visibleGeoJSON = filteredGeoJSON
+  //   ? (filteredGeoJSON as GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>)
+  //   : data;
 
-  const [selectedFeature, setSelectedFeature] =
-    useState<
-      GeoJSONFeature<IndiaStateGeoJSONProperties> | null
-    >(null);
+  const handleSelectFeature = (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => {
+    const { stateName, constituencyName, constituencyNumber } = getSelectedFeatureInfo(feature);
+    const featureId = String(feature.id ?? normalizeKey(stateName, constituencyName));
+
+    selectConstituency(featureId, constituencyName, feature, {
+      featureId,
+      regionName: constituencyName,
+      regionCode: constituencyNumber ?? undefined,
+      level: "constituency",
+      properties: {
+        stateName,
+        constituencyName,
+        constituencyNumber,
+      },
+    });
+  };
+
+  const handleDeselectFeature = () => {
+    deselectConstituency();
+  };
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
@@ -181,21 +217,19 @@ export function LeafletMap() {
       >
         <MapPanes />
 
-        <TileLayer
-          url={defaultTileLayerUrl()}
-          attribution={defaultAttribution()}
-        />
+        <TileLayer url={defaultTileLayerUrl()} attribution={defaultAttribution()} />
 
         <MapResetControl />
 
-        {visibleGeoJSON && isConfigLoaded && selectedMetric ? (
+        {data && isConfigLoaded && selectedMetric ? (
           <IndiaGeoJSONLayer
-            data={visibleGeoJSON}
-            metric={selectedMetric as ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>}
-            onSelectFeature={setSelectedFeature}
-            onDeselectFeature={() =>
-              setSelectedFeature(null)
+            data={data as GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>}
+            filteredFeatures={
+              filteredGeoJSON?.features as GeoJSONFeature<IndiaStateGeoJSONProperties>[] | null
             }
+            metric={selectedMetric as ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>}
+            onSelectFeature={handleSelectFeature}
+            onDeselectFeature={handleDeselectFeature}
           />
         ) : null}
 
@@ -206,12 +240,12 @@ export function LeafletMap() {
             data={stateBoundaries as GeoJsonObject}
             pane="stateBoundaryPane"
             style={{
-              fillOpacity: 0,    // Completely transparent inside so constituency colors show through
-              color: "#000000",  // Solid black state borders
-              weight: 2,         // Thicker line so it stands out above constituencies
-              opacity: 0.9,      // Very high opacity for a sharp, dark line
+              fillOpacity: 0, // Completely transparent inside so constituency colors show through
+              color: "#000000", // Solid black state borders
+              weight: 2, // Thicker line so it stands out above constituencies
+              opacity: 0.9, // Very high opacity for a sharp, dark line
             }}
-            interactive={false}  // CRITICAL: This lets your mouse "click through" to hover over constituencies!
+            interactive={false} // CRITICAL: This lets your mouse "click through" to hover over constituencies!
           />
         ) : null}
         {/* ----------------------------------------------------------- */}
@@ -222,19 +256,12 @@ export function LeafletMap() {
 
         {selectedMetricLegendConfig ? (
           <LeafletControl position="bottomright" className="!pointer-events-auto">
-            <MapLegend
-              config={selectedMetricLegendConfig}
-              position="floating"
-            />
+            <MapLegend config={selectedMetricLegendConfig} position="floating" />
           </LeafletControl>
         ) : null}
       </MapContainer>
 
-      {selectedFeature ? (
-        <SelectedFeatureInfoPanel
-          feature={selectedFeature}
-        />
-      ) : null}
+      {selectedFeature ? <SelectedFeatureInfoPanel feature={selectedFeature} /> : null}
 
       <div className="pointer-events-none absolute left-4 top-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-200">
         <div className="font-semibold">

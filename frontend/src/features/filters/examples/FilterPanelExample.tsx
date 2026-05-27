@@ -77,30 +77,21 @@ export function IntegratedFilterPanel({
 
   const stateOptions = useMemo(() => {
     if (!features) return [];
-    return extractUniqueStates(features)
-      .map((s) => ({
-        value: s.name,
-        label: s.name,
-        count: s.count,
-      }));
+    return extractUniqueStates(features).map((s) => ({
+      value: s.name,
+      label: s.name,
+      count: s.count,
+    }));
   }, [features]);
 
   const marginStats = useMemo(() => {
     if (!features || !metricsIndex) return null;
-    return calculateFieldStatistics(
-      features,
-      metricsIndex,
-      (m) => m.winner_margin_percentage,
-    );
+    return calculateFieldStatistics(features, metricsIndex, (m) => m.winner_margin_percentage);
   }, [features, metricsIndex]);
 
   const voteStats = useMemo(() => {
     if (!features || !metricsIndex) return null;
-    return calculateFieldStatistics(
-      features,
-      metricsIndex,
-      (m) => m.total_votes,
-    );
+    return calculateFieldStatistics(features, metricsIndex, (m) => m.total_votes);
   }, [features, metricsIndex]);
 
   if (isLoadingMetrics) {
@@ -279,7 +270,8 @@ export function IntegratedFilterPanel({
             {filterStatus.matchedPercentage.toFixed(1)}% of constituencies visible
           </p>
           <p className="text-xs text-amber-700">
-            {filterStatus.activeFilterCount} filter{filterStatus.activeFilterCount > 1 ? "s" : ""} applied
+            {filterStatus.activeFilterCount} filter{filterStatus.activeFilterCount > 1 ? "s" : ""}{" "}
+            applied
           </p>
         </div>
       )}

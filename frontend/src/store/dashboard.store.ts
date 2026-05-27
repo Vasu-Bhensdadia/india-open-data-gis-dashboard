@@ -318,6 +318,7 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
         selectedConstituencyName: null,
       },
       selectedFeature: null,
+      activeRegionMetadata: null,
       mapInteraction: {
         ...state.mapInteraction,
         mode: "idle",
@@ -407,13 +408,16 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
     })),
 
   setMetricConfig: (config) =>
-    set({
+    set((state) => ({
       metricConfig: config,
       choroplethMode: {
-        selectedMetricKey: "boundaryOnly",
+        selectedMetricKey:
+          config[state.choroplethMode.selectedMetricKey] !== undefined
+            ? state.choroplethMode.selectedMetricKey
+            : "boundaryOnly",
         isConfigLoaded: true,
       },
-    }),
+    })),
 
   // ===== State Filter Actions =====
   toggleStateFilter: (stateCode, stateName) =>

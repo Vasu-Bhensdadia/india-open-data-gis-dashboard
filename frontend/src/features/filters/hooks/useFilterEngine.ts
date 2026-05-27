@@ -11,7 +11,11 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { loadElectionMetrics, getElectionMetrics, type ElectionMetricsIndex } from "@/services/election-metrics.service";
+import {
+  loadElectionMetrics,
+  getElectionMetrics,
+  type ElectionMetricsIndex,
+} from "@/services/election-metrics.service";
 import { useDashboardStore, selectAllFilters } from "@/store";
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from "@/types/geojson";
 import {
@@ -47,10 +51,7 @@ export function useFilterEngine(features: GeoJSONFeature<Record<string, unknown>
   const [metricsError, setMetricsError] = useState<Error | null>(null);
 
   const filters = useDashboardStore(selectAllFilters);
-  const engineFilters = useMemo(
-    () => mapDashboardFiltersToEngineConfig(filters),
-    [filters],
-  );
+  const engineFilters = useMemo(() => mapDashboardFiltersToEngineConfig(filters), [filters]);
 
   // Load election metrics on mount
   useEffect(() => {
@@ -89,7 +90,9 @@ export function useFilterEngine(features: GeoJSONFeature<Record<string, unknown>
         engineFilters.totalVotes.enabled ? 1 : 0,
         engineFilters.winnerVotes.enabled ? 1 : 0,
       ].reduce((a, b) => a + b, 0),
-      matchedPercentage: filterResult ? (filterResult.statistics.matchedFeatures / filterResult.statistics.totalFeatures) * 100 : 100,
+      matchedPercentage: filterResult
+        ? (filterResult.statistics.matchedFeatures / filterResult.statistics.totalFeatures) * 100
+        : 100,
       appliedFilters: descriptions.map((description) => ({
         name: description,
         description,
@@ -111,7 +114,9 @@ export function useFilterEngine(features: GeoJSONFeature<Record<string, unknown>
  * Hook for detailed filter analysis with breakdown by filter type.
  * Use when you need comprehensive filter statistics.
  */
-export function useDetailedFilterEngine(features: GeoJSONFeature<Record<string, unknown>>[] | null) {
+export function useDetailedFilterEngine(
+  features: GeoJSONFeature<Record<string, unknown>>[] | null,
+) {
   const [metricsIndex, setMetricsIndex] = useState<ElectionMetricsIndex | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const filters = useDashboardStore(selectAllFilters);
@@ -169,15 +174,20 @@ export function useFilteredGeoJSON(
  * Provides low-level control over filter application.
  */
 export function useFilterState(initialFilters: Partial<FilterConfig> = {}) {
-  const defaultFilters = useMemo<FilterConfig>(() => ({
-    party: { type: "set", values: new Set(), enabled: false },
-    state: { type: "set", values: new Set(), enabled: false },
-    marginPercentage: { type: "range", min: 0, max: 100, enabled: false },
-    totalVotes: { type: "range", min: 0, max: 10000000, enabled: false },
-    winnerVotes: { type: "range", min: 0, max: 10000000, enabled: false },
-  }), []);
+  const defaultFilters = useMemo<FilterConfig>(
+    () => ({
+      party: { type: "set", values: new Set(), enabled: false },
+      state: { type: "set", values: new Set(), enabled: false },
+      marginPercentage: { type: "range", min: 0, max: 100, enabled: false },
+      totalVotes: { type: "range", min: 0, max: 10000000, enabled: false },
+      winnerVotes: { type: "range", min: 0, max: 10000000, enabled: false },
+    }),
+    [],
+  );
 
-  const [filters, setFilters] = useState<FilterConfig>(mergeFilters(defaultFilters, initialFilters));
+  const [filters, setFilters] = useState<FilterConfig>(
+    mergeFilters(defaultFilters, initialFilters),
+  );
 
   const updatePartyFilter = useCallback((parties: Set<string>, enabled: boolean) => {
     setFilters((prev: FilterConfig) => ({
@@ -238,10 +248,7 @@ export function useFeatureFilter(
   metricsIndex: ElectionMetricsIndex | null,
 ) {
   const filters = useDashboardStore(selectAllFilters);
-  const engineFilters = useMemo(
-    () => mapDashboardFiltersToEngineConfig(filters),
-    [filters],
-  );
+  const engineFilters = useMemo(() => mapDashboardFiltersToEngineConfig(filters), [filters]);
 
   return useMemo(() => {
     if (!feature || !metricsIndex) return true;
@@ -259,10 +266,7 @@ export function useFeatureFilter(
  */
 export function useFilterSnapshot() {
   const filters = useDashboardStore(selectAllFilters);
-  const engineFilters = useMemo(
-    () => mapDashboardFiltersToEngineConfig(filters),
-    [filters],
-  );
+  const engineFilters = useMemo(() => mapDashboardFiltersToEngineConfig(filters), [filters]);
 
   return useMemo(() => createFilterSnapshot(engineFilters), [engineFilters]);
 }
@@ -272,10 +276,7 @@ export function useFilterSnapshot() {
  */
 export function useFilterDescriptions() {
   const filters = useDashboardStore(selectAllFilters);
-  const engineFilters = useMemo(
-    () => mapDashboardFiltersToEngineConfig(filters),
-    [filters],
-  );
+  const engineFilters = useMemo(() => mapDashboardFiltersToEngineConfig(filters), [filters]);
 
   return useMemo(() => getActiveFilterDescriptions(engineFilters), [engineFilters]);
 }
