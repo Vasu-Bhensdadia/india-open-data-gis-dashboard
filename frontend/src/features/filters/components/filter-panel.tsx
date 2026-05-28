@@ -21,7 +21,13 @@ import {
   formatPercentage,
   formatRangeDisplay,
 } from "@/features/filters/utils/filter-utils";
-import { MultiSelectFilter, RangeSlider, FilterReset } from "./filter-components";
+import {
+  AppliedFilters,
+  FilterReset,
+  FilterStatus,
+  MultiSelectFilter,
+  RangeSlider,
+} from "./filter-components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -144,53 +150,63 @@ export function FilterPanel() {
   );
 
   const isReady = !isFeaturesLoading && !isLoadingMetrics && !!data?.features && !!metricsIndex;
+  const activeFilterCount = filterStatus.appliedFilters.length;
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-amber-600" />
-          Filters
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-900">Dashboard filters</p>
-              <p className="text-xs text-zinc-500">
-                Apply political, state and vote-based filters to the constituency map.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <FilterReset />
-              <Button
-                type="button"
-                onClick={() => applyFilters()}
-                variant="secondary"
-                className="rounded bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700"
-                disabled={!filterStatus.isFiltered}
-              >
-                Apply
-              </Button>
-            </div>
+    <Card className="h-full overflow-hidden border-zinc-200 bg-white shadow-sm">
+      <CardHeader className="border-b border-zinc-100 pb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Filter className="h-5 w-5 text-amber-600" />
+              Filters
+            </CardTitle>
+            <p className="mt-1 text-xs text-zinc-500">
+              Tune geography, party and vote-range scope without leaving the dashboard flow.
+            </p>
           </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-slate-50 p-3 text-sm text-slate-700">
-            {isReady ? (
-              <span>
-                Showing {filteredFeatures?.length ?? 0} of {data?.features.length ?? 0}{" "}
-                constituencies
-              </span>
-            ) : (
-              <span>Loading filter options...</span>
-            )}
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-600">
+              {activeFilterCount} active
+            </div>
+            <FilterReset />
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4 p-4">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 text-sm text-zinc-700 transition-colors">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              {isReady ? (
+                <div className="font-medium text-zinc-900">
+                  Showing {filteredFeatures?.length ?? 0} of {data?.features.length ?? 0}{" "}
+                  constituencies
+                </div>
+              ) : (
+                <div className="font-medium text-zinc-900">Loading filter metadata...</div>
+              )}
+              <div className="mt-1 text-xs text-zinc-500">
+                Filter changes synchronize with the choropleth, analytics cards and charts.
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              onClick={() => applyFilters()}
+              variant="secondary"
+              className="rounded-lg border border-emerald-200 bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow-none transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500"
+              disabled={!filterStatus.isFiltered}
+            >
+              Apply filters
+            </Button>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <FilterStatus features={data?.features ?? null} metricsIndex={metricsIndex} />
+
+        <div className="grid gap-4 xl:grid-cols-2">
           <MultiSelectFilter
             label="Political Party"
             description="Filter constituencies by the winning party."
@@ -210,7 +226,9 @@ export function FilterPanel() {
             onEnable={setStateFilterEnabled}
             enabled={stateFilter.enabled}
           />
+        </div>
 
+        <div className="grid gap-4 xl:grid-cols-2">
           {marginStats ? (
             <RangeSlider
               label="Winner Margin %"
@@ -226,65 +244,53 @@ export function FilterPanel() {
             />
           ) : null}
 
-          {totalVotesStats ? (
-            <RangeSlider
-              label="Total Votes"
-              description={formatRangeDisplay(
-                totalVotesStats.min,
-                totalVotesStats.max,
-                formatVoteCount,
-              )}
-              minValue={totalVotesStats.min}
-              maxValue={totalVotesStats.max}
-              value={totalVotesValue}
-              onChange={setTotalVotesRange}
-              onEnable={setTotalVotesFilterEnabled}
-              enabled={totalVotesFilter.enabled}
-              step={10000}
-              formatter={formatVoteCount}
-              hideSliderTrack={true}
-            />
-          ) : null}
+          <div className="space-y-4">
+            {totalVotesStats ? (
+              <RangeSlider
+                label="Total Votes"
+                description={formatRangeDisplay(
+                  totalVotesStats.min,
+                  totalVotesStats.max,
+                  formatVoteCount,
+                )}
+                minValue={totalVotesStats.min}
+                maxValue={totalVotesStats.max}
+                value={totalVotesValue}
+                onChange={setTotalVotesRange}
+                onEnable={setTotalVotesFilterEnabled}
+                enabled={totalVotesFilter.enabled}
+                step={10000}
+                formatter={formatVoteCount}
+                hideSliderTrack={true}
+              />
+            ) : null}
 
-          {winnerVotesStats ? (
-            <RangeSlider
-              label="Winner Votes"
-              description={formatRangeDisplay(
-                winnerVotesStats.min,
-                winnerVotesStats.max,
-                formatVoteCount,
-              )}
-              minValue={winnerVotesStats.min}
-              maxValue={winnerVotesStats.max}
-              value={winnerVotesValue}
-              onChange={setWinnerVotesRange}
-              onEnable={setWinnerVotesFilterEnabled}
-              enabled={winnerVotesFilter.enabled}
-              step={10000}
-              formatter={formatVoteCount}
-              hideSliderTrack={true}
-            />
-          ) : null}
+            {winnerVotesStats ? (
+              <RangeSlider
+                label="Winner Votes"
+                description={formatRangeDisplay(
+                  winnerVotesStats.min,
+                  winnerVotesStats.max,
+                  formatVoteCount,
+                )}
+                minValue={winnerVotesStats.min}
+                maxValue={winnerVotesStats.max}
+                value={winnerVotesValue}
+                onChange={setWinnerVotesRange}
+                onEnable={setWinnerVotesFilterEnabled}
+                enabled={winnerVotesFilter.enabled}
+                step={10000}
+                formatter={formatVoteCount}
+                hideSliderTrack={true}
+              />
+            ) : null}
+          </div>
         </div>
 
-        {filterStatus.appliedFilters.length > 0 ? (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
-            <p className="font-medium">Active filters</p>
-            <div className="mt-2 space-y-1">
-              {filterStatus.appliedFilters.map((filter) => (
-                <div
-                  key={filter.name}
-                  className="rounded-full bg-white px-3 py-1 text-xs text-blue-900 shadow-sm"
-                >
-                  {filter.description}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
+        <AppliedFilters />
 
         {error ? (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             Unable to load filter metadata.
           </div>
         ) : null}

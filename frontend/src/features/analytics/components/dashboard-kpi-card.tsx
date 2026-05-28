@@ -45,7 +45,11 @@ export function DashboardKpiCard({ metric, loading = false, className }: Dashboa
   return (
     <Card
       size="sm"
-      className={cn("min-h-[132px] overflow-hidden border shadow-none", tone.shell, className)}
+      className={cn(
+        "min-h-[132px] overflow-hidden border shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm",
+        tone.shell,
+        className,
+      )}
     >
       <CardContent className="space-y-3 px-3 py-3">
         {loading ? (

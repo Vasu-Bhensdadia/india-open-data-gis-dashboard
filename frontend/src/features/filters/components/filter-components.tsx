@@ -1,22 +1,49 @@
-/**
- * Reusable filter components for the analytics dashboard.
- *
- * Provides:
- * - Range slider for numeric filters
- * - Multi-select for categorical filters
- * - Filter status display
- * - Filter application controls
- */
-
 "use client";
 
+import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { useDashboardStore, selectAllFilters, selectHasActiveFilters } from "@/store";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useFilterDescriptions } from "../hooks/useFilterEngine";
 import { applyFilters, mapDashboardFiltersToEngineConfig } from "../utils/filter-engine";
 import { calculateFilterImpact } from "../utils/filter-utils";
 import type { ElectionMetricsIndex } from "@/services/election-metrics.service";
 import type { GeoJSONFeature } from "@/types/geojson";
+
+function FilterShell({
+  label,
+  description,
+  rightSlot,
+  children,
+  className,
+}: {
+  label: string;
+  description?: string;
+  rightSlot?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-zinc-300 hover:shadow-[0_8px_30px_rgba(15,23,42,0.04)]",
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-zinc-950">{label}</h3>
+          {description ? <p className="mt-1 text-xs text-zinc-500">{description}</p> : null}
+        </div>
+        {rightSlot ? <div className="shrink-0">{rightSlot}</div> : null}
+      </div>
+
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
 
 /**
  * Range slider filter component.
@@ -49,52 +76,69 @@ export function RangeSlider({
   formatter = (v) => v.toString(),
   hideSliderTrack = false,
 }: RangeSliderProps) {
+  const rangeLabel = `${formatter(value[0])} - ${formatter(value[1])}`;
+
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-900">{label}</label>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => onEnable(e.target.checked)}
-          className="h-4 w-4"
-        />
-      </div>
+    <FilterShell
+      label={label}
+      description={description}
+      rightSlot={
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em]",
+              enabled ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500",
+            )}
+          >
+            {enabled ? "Active" : "Off"}
+          </span>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onEnable(e.target.checked)}
+            className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-600"
+          />
+        </label>
+      }
+    >
+      {enabled ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+            <span>Selected range</span>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-zinc-700">
+              {rangeLabel}
+            </span>
+          </div>
 
-      {description && <p className="text-xs text-zinc-500">{description}</p>}
-
-      {enabled && (
-        <div className="space-y-2">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="text-xs text-zinc-600">From</label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-medium text-zinc-600">From</label>
               <input
                 type="number"
                 min={minValue}
                 max={maxValue}
                 value={value[0]}
                 onChange={(e) => onChange(Number(e.target.value), value[1])}
-                className="mt-1 w-full rounded border border-zinc-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
               <p className="mt-1 text-xs text-zinc-500">{formatter(value[0])}</p>
             </div>
-            <div className="flex-1">
-              <label className="text-xs text-zinc-600">To</label>
+            <div>
+              <label className="text-xs font-medium text-zinc-600">To</label>
               <input
                 type="number"
                 min={minValue}
                 max={maxValue}
                 value={value[1]}
                 onChange={(e) => onChange(value[0], Number(e.target.value))}
-                className="mt-1 w-full rounded border border-zinc-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
               <p className="mt-1 text-xs text-zinc-500">{formatter(value[1])}</p>
             </div>
           </div>
 
-          {/* Range slider visualization */}
-          {!hideSliderTrack && (
-            <>
+          {!hideSliderTrack ? (
+            <div className="space-y-2">
               <input
                 type="range"
                 min={minValue}
@@ -102,7 +146,7 @@ export function RangeSlider({
                 step={step}
                 value={value[0]}
                 onChange={(e) => onChange(Number(e.target.value), value[1])}
-                className="w-full"
+                className="w-full accent-emerald-600"
               />
               <input
                 type="range"
@@ -111,13 +155,17 @@ export function RangeSlider({
                 step={step}
                 value={value[1]}
                 onChange={(e) => onChange(value[0], Number(e.target.value))}
-                className="w-full"
+                className="w-full accent-emerald-600"
               />
-            </>
-          )}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+          Enable this filter to narrow the dashboard scope.
         </div>
       )}
-    </div>
+    </FilterShell>
   );
 }
 
@@ -147,57 +195,103 @@ export function MultiSelectFilter({
 }: MultiSelectFilterProps) {
   const [expanded, setExpanded] = useState(false);
   const visibleOptions = expanded ? options : options.slice(0, maxVisible);
+  const selectedCount = selectedValues.size;
 
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-900">{label}</label>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => onEnable(e.target.checked)}
-          className="h-4 w-4"
-        />
-      </div>
+    <FilterShell
+      label={label}
+      description={description}
+      rightSlot={
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em]",
+              enabled ? "bg-sky-50 text-sky-700" : "bg-zinc-100 text-zinc-500",
+            )}
+          >
+            {selectedCount} selected
+          </span>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onEnable(e.target.checked)}
+            className="h-4 w-4 rounded border-zinc-300 text-sky-600 focus:ring-sky-600"
+          />
+        </label>
+      }
+    >
+      {enabled ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+            <span>Available options</span>
+            <span>{selectedCount} of {options.length} chosen</span>
+          </div>
 
-      {description && <p className="text-xs text-zinc-500">{description}</p>}
+          <div className="max-h-56 space-y-2 overflow-auto pr-1">
+            {visibleOptions.length > 0 ? (
+              visibleOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors",
+                    selectedValues.has(option.value)
+                      ? "border-sky-200 bg-sky-50/70"
+                      : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.has(option.value)}
+                    onChange={(e) => {
+                      const newSelected = new Set(selectedValues);
+                      if (e.target.checked) {
+                        newSelected.add(option.value);
+                      } else {
+                        newSelected.delete(option.value);
+                      }
+                      onChange(newSelected);
+                    }}
+                    className="h-4 w-4 rounded border-zinc-300 text-sky-600 focus:ring-sky-600"
+                  />
+                  <span className="min-w-0 flex-1 text-sm text-zinc-800">{option.label}</span>
+                  {option.count !== undefined ? (
+                    <span className="shrink-0 text-xs text-zinc-500">({option.count})</span>
+                  ) : null}
+                </label>
+              ))
+            ) : (
+              <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+                No options are available in the current dataset.
+              </div>
+            )}
+          </div>
 
-      {enabled && (
-        <div className="space-y-2">
-          {visibleOptions.map((option) => (
-            <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedValues.has(option.value)}
-                onChange={(e) => {
-                  const newSelected = new Set(selectedValues);
-                  if (e.target.checked) {
-                    newSelected.add(option.value);
-                  } else {
-                    newSelected.delete(option.value);
-                  }
-                  onChange(newSelected);
-                }}
-                className="h-4 w-4"
-              />
-              <span className="text-sm text-zinc-700">{option.label}</span>
-              {option.count !== undefined && (
-                <span className="text-xs text-zinc-500">({option.count})</span>
-              )}
-            </label>
-          ))}
-
-          {options.length > maxVisible && (
+          {options.length > maxVisible ? (
             <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
-              className="text-xs text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center gap-1 text-xs font-medium text-sky-700 transition hover:text-sky-800"
             >
-              {expanded ? "Show less" : `Show more (${options.length - maxVisible})`}
+              {expanded ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                  Show more ({options.length - maxVisible})
+                </>
+              )}
             </button>
-          )}
+          ) : null}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+          Enable this filter to inspect the categorical options.
         </div>
       )}
-    </div>
+    </FilterShell>
   );
 }
 
@@ -224,41 +318,49 @@ export function SingleSelectFilter({
   onEnable,
   enabled,
 }: SingleSelectFilterProps) {
-  // Extract the single selected value from the Set, or default to an empty string ("All")
   const currentValue = selectedValues.size > 0 ? Array.from(selectedValues)[0] : "";
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     if (val === "") {
-      onChange(new Set()); // Clear selection if they pick the default option
+      onChange(new Set());
     } else {
-      onChange(new Set([val])); // Wrap the single selection in a Set for the store
+      onChange(new Set([val]));
     }
   };
 
   return (
-    <div className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-900">{label}</label>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => onEnable(e.target.checked)}
-          className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-600"
-        />
-      </div>
-
-      {description && <p className="text-xs text-zinc-500">{description}</p>}
-
-      {enabled && (
-        <div className="space-y-2 mt-2">
+    <FilterShell
+      label={label}
+      description={description}
+      rightSlot={
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600">
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.16em]",
+              enabled ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500",
+            )}
+          >
+            {enabled ? "Single select" : "Off"}
+          </span>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onEnable(e.target.checked)}
+            className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-600"
+          />
+        </label>
+      }
+    >
+      {enabled ? (
+        <div className="space-y-2">
           <select
             value={currentValue}
             onChange={handleSelectChange}
-            className="w-full rounded-md border border-zinc-300 p-2 text-sm text-zinc-900 bg-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
           >
             <option value="" className="text-zinc-900">
-              -- All Parties --
+              All options
             </option>
             {options.map((option, index) => (
               <option
@@ -270,9 +372,15 @@ export function SingleSelectFilter({
               </option>
             ))}
           </select>
+
+          <p className="text-xs text-zinc-500">Only one value can stay active at a time.</p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
+          Turn this control on to pick a single category.
         </div>
       )}
-    </div>
+    </FilterShell>
   );
 }
 
@@ -309,19 +417,59 @@ export function FilterStatus({ features, metricsIndex }: FilterStatusProps) {
   }, [features, metricsIndex, engineFilters]);
 
   return (
-    <div className="space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-      <div className="text-sm font-medium text-zinc-900">Filter Status</div>
-      <div className="space-y-1 text-sm text-zinc-600">
-        <div>Total: {impact.totalFeatures} constituencies</div>
+    <section className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          Visible: {impact.matchedFeatures} ({impact.matchPercentage.toFixed(1)}%)
+          <h4 className="text-sm font-semibold text-zinc-950">Filter status</h4>
+          <p className="mt-1 text-xs text-zinc-500">Live scope for the current dashboard view.</p>
         </div>
-        <div>
-          Filtered: {impact.filteredFeatures} ({impact.filterPercentage.toFixed(1)}%)
+        <div className="text-right text-xs font-medium text-zinc-500">
+          {impact.filteredFeatures > 0 ? "Filtered scope" : "Full scope"}
         </div>
       </div>
-      {impact.filteredFeatures > 0 && <p className="text-xs text-amber-600">{impact.message}</p>}
-    </div>
+
+      <div className="mt-4 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Total</div>
+            <div className="mt-1 text-sm font-semibold text-zinc-950">
+              {impact.totalFeatures.toLocaleString()}
+            </div>
+          </div>
+          <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Visible</div>
+            <div className="mt-1 text-sm font-semibold text-zinc-950">
+              {impact.matchedFeatures.toLocaleString()}
+            </div>
+          </div>
+          <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">Filtered</div>
+            <div className="mt-1 text-sm font-semibold text-zinc-950">
+              {impact.filteredFeatures.toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3 text-xs text-zinc-500">
+            <span>Visibility ratio</span>
+            <span>{impact.matchPercentage.toFixed(1)}% visible</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-200">
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+              style={{ width: `${Math.max(0, Math.min(100, impact.matchPercentage))}%` }}
+            />
+          </div>
+        </div>
+
+        {impact.filteredFeatures > 0 ? (
+          <p className="text-xs text-amber-700">{impact.message}</p>
+        ) : (
+          <p className="text-xs text-zinc-500">No filters are narrowing the dataset right now.</p>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -345,16 +493,20 @@ export function FilterReset({ onReset, variant = "secondary" }: FilterResetProps
   };
 
   return (
-    <button
+    <Button
+      type="button"
       onClick={handleReset}
-      className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+      variant={variant === "primary" ? "destructive" : "secondary"}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium shadow-none transition-all duration-200",
         variant === "primary"
-          ? "bg-red-600 hover:bg-red-700 text-white"
-          : "bg-zinc-200 hover:bg-zinc-300 text-zinc-900"
-      }`}
+          ? "bg-rose-600 text-white hover:bg-rose-700"
+          : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200",
+      )}
     >
-      Clear All Filters
-    </button>
+      <RotateCcw className="h-4 w-4" />
+      Clear all filters
+    </Button>
   );
 }
 
@@ -369,15 +521,24 @@ export function AppliedFilters() {
   }
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium text-zinc-900">Active Filters</h4>
-      <div className="space-y-1">
+    <section className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h4 className="text-sm font-semibold text-blue-950">Active filters</h4>
+          <p className="mt-1 text-xs text-blue-800/80">The dashboard is currently narrowed to:</p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {descriptions.map((desc) => (
-          <div key={desc} className="flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1">
-            <span className="text-sm text-blue-900">{desc}</span>
+          <div
+            key={desc}
+            className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-900 transition-colors hover:bg-blue-50"
+          >
+            {desc}
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

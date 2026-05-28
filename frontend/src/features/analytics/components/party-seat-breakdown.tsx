@@ -12,7 +12,7 @@ export function PartySeatBreakdown({ partySeatCounts, loading = false }: PartySe
   const visibleParties = partySeatCounts.slice(0, 5);
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
+    <section className="rounded-xl border border-zinc-200 bg-white px-4 py-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-zinc-950">Party seat counts</h3>
@@ -26,12 +26,15 @@ export function PartySeatBreakdown({ partySeatCounts, loading = false }: PartySe
       <div className="mt-4 space-y-2">
         {loading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <div key={`party-skeleton-${index}`} className="h-9 rounded-lg bg-zinc-100/80" />
+              <div
+                key={`party-skeleton-${index}`}
+                className="h-11 animate-pulse rounded-lg bg-zinc-100/80"
+              />
             ))
           : visibleParties.map((party) => (
               <div
                 key={party.partyName}
-                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span

@@ -75,7 +75,7 @@ function MapResetControl() {
   return (
     <button
       type="button"
-      className="pointer-events-auto absolute right-4 top-4 z-[1000] inline-flex items-center rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+      className="pointer-events-auto absolute right-4 top-4 z-[1000] inline-flex items-center rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
       onClick={resetMapView}
     >
       Reset view
@@ -91,7 +91,7 @@ function SelectedFeatureInfoPanel({
   const { stateName, constituencyName, constituencyNumber } = getSelectedFeatureInfo(feature);
 
   return (
-    <div className="absolute right-4 top-16 z-[1200] w-60 rounded-lg bg-slate-900/85 p-3 text-white shadow-xl backdrop-blur-sm">
+    <div className="absolute right-4 top-16 z-[1200] w-60 rounded-xl border border-slate-800/40 bg-slate-900/85 p-3 text-white shadow-xl backdrop-blur-sm transition-opacity duration-200">
       <div className="space-y-3">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-slate-400">State</p>
@@ -117,8 +117,10 @@ export function LeafletMap() {
     cacheKey: "india-parliamentary-constituencies",
   });
 
-  // ---> ADD THESE LINES: Fetch the state boundaries <---
   const [stateBoundaries, setStateBoundaries] = useState<GeoJsonObject | null>(null);
+  const [legendPosition, setLegendPosition] = useState<"bottomright" | "bottomleft">(
+    "bottomright",
+  );
 
   useEffect(() => {
     fetch("/data/state_geojson_for_website.geojson")
@@ -126,7 +128,24 @@ export function LeafletMap() {
       .then((jsonData) => setStateBoundaries(jsonData))
       .catch((err) => console.error("Error loading state boundaries:", err));
   }, []);
-  // ----------------------------------------------------
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const updateLegendPosition = () => {
+      setLegendPosition(mediaQuery.matches ? "bottomleft" : "bottomright");
+    };
+
+    updateLegendPosition();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updateLegendPosition);
+      return () => mediaQuery.removeEventListener("change", updateLegendPosition);
+    }
+
+    mediaQuery.addListener(updateLegendPosition);
+    return () => mediaQuery.removeListener(updateLegendPosition);
+  }, []);
 
   const selectedMetricKey = useDashboardStore(selectSelectedMetricKey);
   const metricConfig = useDashboardStore((state) => state.metricConfig);
@@ -222,29 +241,27 @@ export function LeafletMap() {
           />
         ) : null}
 
-        {/* ---> ADD THIS NEW BLOCK: The State Boundary Layer (Top) <--- */}
         {stateBoundaries ? (
           <GeoJSON
             key="india-state-boundaries"
             data={stateBoundaries as GeoJsonObject}
             pane="stateBoundaryPane"
             style={{
-              fillOpacity: 0, // Completely transparent inside so constituency colors show through
-              color: "#000000", // Solid black state borders
-              weight: 2, // Thicker line so it stands out above constituencies
-              opacity: 0.9, // Very high opacity for a sharp, dark line
+              fillOpacity: 0,
+              color: "#000000",
+              weight: 2,
+              opacity: 0.9,
             }}
-            interactive={false} // CRITICAL: This lets your mouse "click through" to hover over constituencies!
+            interactive={false}
           />
         ) : null}
-        {/* ----------------------------------------------------------- */}
 
         <LeafletControl position="topleft" className="!pointer-events-auto">
           <ChoroplethMetricSelector />
         </LeafletControl>
 
         {selectedMetricLegendConfig ? (
-          <LeafletControl position="bottomright" className="!pointer-events-auto">
+          <LeafletControl position={legendPosition} className="!pointer-events-auto">
             <MapLegend config={selectedMetricLegendConfig} position="floating" />
           </LeafletControl>
         ) : null}
@@ -252,13 +269,17 @@ export function LeafletMap() {
 
       {selectedFeature ? <SelectedFeatureInfoPanel feature={selectedFeature} /> : null}
 
-      <div className="pointer-events-none absolute left-4 top-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-200">
-        <div className="font-semibold">
+      <div className="pointer-events-none absolute left-4 top-4 z-[1000] max-w-[calc(100%-2rem)] rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-100 backdrop-blur-sm">
+        <div className="font-semibold text-slate-900">
           {selectedMetric?.label ?? "Loading metric configuration..."}
         </div>
-        {(loading || !isConfigLoaded) && "Loading map data..."}
+        <div className="mt-1 text-[11px] leading-relaxed text-slate-500">
+          {loading || !isConfigLoaded
+            ? "Preparing map layers and metric definitions."
+            : "Hover to preview analytics and click a constituency to keep it in focus."}
+        </div>
 
-        {error && "Unable to load map data."}
+        {error ? <div className="mt-1 text-[11px] text-rose-700">Unable to load map data.</div> : null}
       </div>
 
       {error ? (

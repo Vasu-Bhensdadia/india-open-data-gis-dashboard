@@ -69,9 +69,9 @@ export function AnalyticsChartFrame({
     <Card
       size="sm"
       className={cn(
-        "border shadow-none transition",
+        "border shadow-none transition-all duration-200",
         selected ? "border-sky-300 bg-sky-50/40 ring-1 ring-sky-400/70" : "border-zinc-200",
-        isInteractive ? "cursor-pointer hover:border-sky-300" : null,
+        isInteractive ? "cursor-pointer hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-sm" : null,
         className,
       )}
       role={isInteractive ? "button" : undefined}
@@ -94,7 +94,7 @@ export function AnalyticsChartFrame({
           <div className="flex shrink-0 flex-col items-end gap-1">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
                 status.shell,
               )}
             >
