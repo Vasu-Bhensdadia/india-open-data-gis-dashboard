@@ -19,10 +19,12 @@ import { ChoroplethMetricSelector } from "./ChoroplethMetricSelector";
 import MapLegend from "@/components/map-legend/MapLegend";
 import {
   selectIsChoroplethConfigLoaded,
+  selectSelectedConstituencyId,
   selectSelectedFeature,
   selectSelectedMetricKey,
   useDashboardStore,
 } from "@/store";
+import { useDashboardFeatureSync } from "@/features/analytics/hooks/useDashboardFeatureSync";
 
 import type {
   GeoJSONFeature,
@@ -32,7 +34,6 @@ import type {
 import type { ChoroplethMetricDescriptor, ChoroplethMetricKey } from "../types/choropleth";
 
 import { getSelectedFeatureInfo } from "../utils/feature-info";
-import { normalizeKey } from "@/services/election-metrics.service";
 
 const DEFAULT_CENTER: [number, number] = [22.0, 78.0];
 const DEFAULT_ZOOM = 5;
@@ -131,11 +132,16 @@ export function LeafletMap() {
   const metricConfig = useDashboardStore((state) => state.metricConfig);
   const isConfigLoaded = useDashboardStore(selectIsChoroplethConfigLoaded);
   const setMetricConfig = useDashboardStore((state) => state.setMetricConfig);
+  const selectedConstituencyId = useDashboardStore(selectSelectedConstituencyId);
   const selectedFeature = useDashboardStore(
     selectSelectedFeature,
   ) as GeoJSONFeature<IndiaStateGeoJSONProperties> | null;
-  const selectConstituency = useDashboardStore((state) => state.selectConstituency);
-  const deselectConstituency = useDashboardStore((state) => state.deselectConstituency);
+  const {
+    syncHoverFeature,
+    clearHoverFeature,
+    syncSelectionFeature,
+    clearSelectionFeature,
+  } = useDashboardFeatureSync();
 
   useEffect(() => {
     if (isConfigLoaded) {
@@ -186,27 +192,6 @@ export function LeafletMap() {
   //   ? (filteredGeoJSON as GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>)
   //   : data;
 
-  const handleSelectFeature = (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => {
-    const { stateName, constituencyName, constituencyNumber } = getSelectedFeatureInfo(feature);
-    const featureId = String(feature.id ?? normalizeKey(stateName, constituencyName));
-
-    selectConstituency(featureId, constituencyName, feature, {
-      featureId,
-      regionName: constituencyName,
-      regionCode: constituencyNumber ?? undefined,
-      level: "constituency",
-      properties: {
-        stateName,
-        constituencyName,
-        constituencyNumber,
-      },
-    });
-  };
-
-  const handleDeselectFeature = () => {
-    deselectConstituency();
-  };
-
   return (
     <div className="relative h-full w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <MapContainer
@@ -228,8 +213,12 @@ export function LeafletMap() {
               filteredGeoJSON?.features as GeoJSONFeature<IndiaStateGeoJSONProperties>[] | null
             }
             metric={selectedMetric as ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>}
-            onSelectFeature={handleSelectFeature}
-            onDeselectFeature={handleDeselectFeature}
+            selectedFeatureId={selectedConstituencyId}
+            selectedFeature={selectedFeature}
+            onHoverFeature={syncHoverFeature}
+            onLeaveFeature={clearHoverFeature}
+            onSelectFeature={syncSelectionFeature}
+            onDeselectFeature={clearSelectionFeature}
           />
         ) : null}
 

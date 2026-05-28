@@ -4,9 +4,11 @@ import { AlertTriangle, BarChart3, Loader2 } from "lucide-react";
 
 import { useIndiaGeoJSON } from "@/features/maps/hooks/useIndiaGeoJSON";
 import { useDashboardAnalytics } from "../hooks/useDashboardAnalytics";
+import { useDashboardInteractionSync } from "../hooks/useDashboardInteractionSync";
 import type { AnalyticsProvider } from "../types/analytics.types";
 import { AnalyticsChartGrid } from "../charts/components/analytics-chart-grid";
 import { useAnalyticsCharts } from "../charts/hooks/useAnalyticsCharts";
+import { DashboardInteractionBanner } from "./dashboard-interaction-banner";
 import { DashboardKpiGrid } from "./dashboard-kpi-grid";
 import { PartySeatBreakdown } from "./party-seat-breakdown";
 
@@ -49,6 +51,11 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
     selectedMetricKey,
     isLoading,
     errorMessage: error?.message ?? geojsonError?.message ?? null,
+  });
+
+  const { activeEvent } = useDashboardInteractionSync({
+    metricsIndex,
+    selectedMetric,
   });
 
   const isBusy = isFeaturesLoading || isLoading;
@@ -98,6 +105,8 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
               ? `Showing ${filteredFeatureCount.toLocaleString()} of ${totalFeatureCount.toLocaleString()} constituencies in scope.`
               : "Analytics data is not available yet."}
         </div>
+
+        <DashboardInteractionBanner event={activeEvent} loading={isBusy} />
 
         {error ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">

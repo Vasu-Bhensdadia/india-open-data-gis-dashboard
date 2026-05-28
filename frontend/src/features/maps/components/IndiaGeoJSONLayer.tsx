@@ -21,16 +21,24 @@ interface IndiaGeoJSONLayerProps {
   data: GeoJSONFeatureCollection<IndiaStateGeoJSONProperties>;
   filteredFeatures?: GeoJSONFeature<IndiaStateGeoJSONProperties>[] | null;
   metric: ChoroplethMetricDescriptor<IndiaStateGeoJSONProperties>;
+  selectedFeatureId?: string | null;
+  selectedFeature?: GeoJSONFeature<IndiaStateGeoJSONProperties> | null;
   onSelectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
   onDeselectFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
+  onHoverFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
+  onLeaveFeature?: (feature: GeoJSONFeature<IndiaStateGeoJSONProperties>) => void;
 }
 
 export function IndiaGeoJSONLayer({
   data,
   filteredFeatures,
   metric,
+  selectedFeatureId,
+  selectedFeature,
   onSelectFeature,
   onDeselectFeature,
+  onHoverFeature,
+  onLeaveFeature,
 }: IndiaGeoJSONLayerProps) {
   const map = useMap();
   const layerRef = useRef<any>(null);
@@ -98,11 +106,15 @@ export function IndiaGeoJSONLayer({
     },
     onSelectFeature,
     onDeselectFeature,
+    onHoverFeature,
+    onLeaveFeature,
     defaultCenter: [22.0, 78.0],
     defaultZoom: 5,
     maxZoom: 10,
     padding: [28, 28],
     duration: 0.4,
+    controlledSelectedFeatureId: selectedFeatureId ?? null,
+    controlledSelectedFeature: selectedFeature ?? null,
   });
 
   useFitBoundsFromLayer(map, layerRef);

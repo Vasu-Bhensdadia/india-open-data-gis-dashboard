@@ -18,6 +18,8 @@ export interface MapFeatureInteractionConfig<TProperties = Record<string, unknow
   onLeaveFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   onZoomFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   getFeatureId?: (feature: GeoJSONFeature<TProperties>) => string | undefined;
+  controlledSelectedFeatureId?: string | null;
+  controlledSelectedFeature?: GeoJSONFeature<TProperties> | null;
   defaultCenter: [number, number];
   defaultZoom: number;
   maxZoom?: number;
@@ -47,6 +49,8 @@ export function useMapFeatureInteractions<
     onLeaveFeature,
     onZoomFeature,
     getFeatureId,
+    controlledSelectedFeatureId,
+    controlledSelectedFeature,
     defaultCenter,
     defaultZoom,
     maxZoom,
@@ -70,6 +74,8 @@ export function useMapFeatureInteractions<
     onSelectFeature,
     onDeselectFeature,
     getFeatureId,
+    controlledSelectedFeatureId,
+    controlledSelectedFeature,
   });
 
   const { zoomToLayer, resetMapView } = useMapZoom(map, {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { GeoJSONPathOptions } from "../utils/hover-style";
@@ -25,6 +25,8 @@ export interface MapSelectionConfig<TProperties = Record<string, unknown>> {
   onSelectFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   onDeselectFeature?: (feature: GeoJSONFeature<TProperties>) => void;
   getFeatureId?: (feature: GeoJSONFeature<TProperties>) => string | undefined;
+  controlledSelectedFeatureId?: string | null;
+  controlledSelectedFeature?: GeoJSONFeature<TProperties> | null;
 }
 
 export interface MapSelectionResult<TProperties = Record<string, unknown>> {
@@ -45,6 +47,8 @@ export function useMapSelection<
     onSelectFeature,
     onDeselectFeature,
     getFeatureId,
+    controlledSelectedFeatureId,
+    controlledSelectedFeature,
   } = config ?? {};
 
   const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
@@ -71,6 +75,14 @@ export function useMapSelection<
       getFeatureId?.(feature) ?? getGeoJSONFeatureIdentifier(feature),
     [getFeatureId],
   );
+
+  const isControlledSelection = controlledSelectedFeatureId !== undefined;
+  const effectiveSelectedFeatureId = isControlledSelection
+    ? controlledSelectedFeatureId
+    : selectedFeatureId;
+  const effectiveSelectedFeature = isControlledSelection
+    ? controlledSelectedFeature ?? null
+    : selectedFeature;
 
   const clearSelectedLayer = useCallback(() => {
     const selectedLayer = selectedLayerRef.current;
@@ -110,14 +122,14 @@ export function useMapSelection<
 
   const isSelectedFeature = useCallback(
     (feature: GeoJSONFeature<TProperties>) => {
-      if (!selectedFeatureId) {
+      if (!effectiveSelectedFeatureId) {
         return false;
       }
 
       const featureId = resolveFeatureId(feature);
-      return featureId !== undefined && featureId === selectedFeatureId;
+      return featureId !== undefined && featureId === effectiveSelectedFeatureId;
     },
-    [resolveFeatureId, selectedFeatureId],
+    [effectiveSelectedFeatureId, resolveFeatureId],
   );
 
   const style = useCallback(
@@ -127,6 +139,20 @@ export function useMapSelection<
         : baseStyle(feature),
     [baseStyle, isSelectedFeature, selectedStyle],
   );
+
+  useEffect(() => {
+    if (!isControlledSelection) {
+      return;
+    }
+
+    clearSelectedLayer();
+    selectedFeatureRef.current = controlledSelectedFeature ?? null;
+  }, [
+    clearSelectedLayer,
+    controlledSelectedFeature,
+    controlledSelectedFeatureId,
+    isControlledSelection,
+  ]);
 
   const selectFeature = useCallback(
     (layer: unknown, feature: GeoJSONFeature<TProperties>) => {
@@ -141,7 +167,7 @@ export function useMapSelection<
         return;
       }
 
-      if (selectedFeatureId === featureId && selectedLayerRef.current === hoverableLayer) {
+      if (effectiveSelectedFeatureId === featureId && selectedLayerRef.current === hoverableLayer) {
         return;
       }
 
@@ -175,10 +201,10 @@ export function useMapSelection<
     },
     [
       baseStyle,
+      effectiveSelectedFeatureId,
       onDeselectFeature,
       onSelectFeature,
       resolveFeatureId,
-      selectedFeatureId,
       selectedStyle,
     ],
   );
@@ -187,8 +213,8 @@ export function useMapSelection<
     style,
     selectFeature,
     clearSelection,
-    selectedFeature,
-    selectedFeatureId,
+    selectedFeature: effectiveSelectedFeature,
+    selectedFeatureId: effectiveSelectedFeatureId,
     selectedStyle,
   };
 }

@@ -17,7 +17,21 @@ export {
 } from "./utils/analytics-calculations";
 
 export { useDashboardAnalytics } from "./hooks/useDashboardAnalytics";
+export { useDashboardFeatureSync } from "./hooks/useDashboardFeatureSync";
+export { useDashboardInteractionSync } from "./hooks/useDashboardInteractionSync";
 export { useAnalyticsStore } from "./analytics.store";
+export {
+  createConstituencyInteractionContext,
+  createConstituencyMapMetadata,
+  createDashboardInteractionEvent,
+} from "./utils/interaction-events";
+export type {
+  ConstituencyInteractionContext,
+  ConstituencyMapMetadata,
+  DashboardInteractionEvent,
+  DashboardInteractionKind,
+  DashboardInteractionOrigin,
+} from "./utils/interaction-events";
 export {
   selectActiveAnalyticsChartIds,
   selectAnalyticsChartDefinitions,
@@ -30,6 +44,7 @@ export {
 export * from "./charts";
 
 export { AnalyticsPanel } from "./components/analytics-panel";
+export { DashboardInteractionBanner } from "./components/dashboard-interaction-banner";
 export { DashboardKpiCard } from "./components/dashboard-kpi-card";
 export { DashboardKpiGrid } from "./components/dashboard-kpi-grid";
 export { PartySeatBreakdown } from "./components/party-seat-breakdown";
