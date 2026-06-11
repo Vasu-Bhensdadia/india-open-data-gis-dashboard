@@ -44,7 +44,20 @@ export {
 export * from "./charts";
 
 export { AnalyticsPanel } from "./components/analytics-panel";
+export { ConstituencyProfile } from "./components/constituency-profile";
+export { ElectionSummaryCard } from "./components/election-summary-card";
 export { DashboardInteractionBanner } from "./components/dashboard-interaction-banner";
 export { DashboardKpiCard } from "./components/dashboard-kpi-card";
 export { DashboardKpiGrid } from "./components/dashboard-kpi-grid";
 export { PartySeatBreakdown } from "./components/party-seat-breakdown";
+
+export {
+  buildConstituencyProfile,
+  formatConstituencyProfile,
+  getPartyColor,
+  getPartyTone,
+} from "./utils/constituency-profile";
+export type {
+  ConstituencyProfileData,
+  FormattedConstituencyProfile,
+} from "./utils/constituency-profile";

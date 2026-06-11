@@ -7,6 +7,7 @@
 
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { ChoroplethMetricKey, ChoroplethMetricDescriptor } from "@/features/maps/types/choropleth";
+import type { LatLngBoundsTuple } from "@/features/maps/utils/map-bounds";
 import type { MapViewLevel, MapInteractionMode, MapRegionMetadata } from "@/features/maps/map.store";
 
 /**
@@ -93,6 +94,23 @@ export interface ChoroplethMode {
 }
 
 /**
+ * Map view request triggered by search or external navigation.
+ */
+export type MapViewRequest =
+  | {
+      type: "bounds";
+      bounds: LatLngBoundsTuple;
+      nonce: number;
+    }
+  | {
+      type: "reset";
+      nonce: number;
+    };
+
+/** @deprecated Use MapViewRequest */
+export type MapZoomRequest = MapViewRequest;
+
+/**
  * Constituency selection state.
  */
 export interface ConstituencySelection {
@@ -127,6 +145,9 @@ export interface DashboardState {
   marginPercentageFilter: MarginPercentageFilter;
   totalVotesFilter: TotalVotesFilter;
   winnerVotesFilter: WinnerVotesFilter;
+
+  // ===== Map View =====
+  mapViewRequest: MapViewRequest | null;
 
   // ===== UI State =====
   isFilterPanelOpen: boolean;
@@ -198,6 +219,7 @@ export const DEFAULT_DASHBOARD_STATE: DashboardState = {
     enabled: false,
     step: 100000,
   },
+  mapViewRequest: null,
   isFilterPanelOpen: false,
   isAnalyticsPanelOpen: true,
   activeAnalyticsTab: null,

@@ -1,6 +1,7 @@
 import { MapSection } from "@/features/maps/components/map-section";
 import { AnalyticsPanel } from "@/features/analytics/components/analytics-panel";
 import { FilterPanel } from "@/features/filters/components/filter-panel";
+import { SearchBar } from "@/features/search";
 
 /**
  * Main dashboard page.
@@ -15,11 +16,14 @@ import { FilterPanel } from "@/features/filters/components/filter-panel";
 export default function DashboardPage() {
   return (
     <div className="w-full h-full p-4 sm:p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-zinc-950">Dashboard</h1>
-        <p className="mt-1 text-sm text-zinc-600">
-          Geospatial analytics and open data visualization
-        </p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-zinc-950">Dashboard</h1>
+          <p className="mt-1 text-sm text-zinc-600">
+            Geospatial analytics and open data visualization
+          </p>
+        </div>
+        <SearchBar className="md:hidden" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -78,7 +78,8 @@ export function getFeatureBounds<TProperties = Record<string, unknown>>(
     }
 
     if (coord.length === 2 && typeof coord[0] === "number" && typeof coord[1] === "number") {
-      const [lat, lng] = coord as [number, number];
+      // GeoJSON positions are [longitude, latitude].
+      const [lng, lat] = coord as [number, number];
       bounds[0] = Math.min(bounds[0], lat);
       bounds[1] = Math.min(bounds[1], lng);
       bounds[2] = Math.max(bounds[2], lat);

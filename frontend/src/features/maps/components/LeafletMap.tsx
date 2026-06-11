@@ -25,6 +25,7 @@ import {
   useDashboardStore,
 } from "@/store";
 import { useDashboardFeatureSync } from "@/features/analytics/hooks/useDashboardFeatureSync";
+import { MapZoomSync } from "./MapZoomSync";
 
 import type {
   GeoJSONFeature,
@@ -220,6 +221,7 @@ export function LeafletMap() {
         style={{ height: "100%", width: "100%" }}
       >
         <MapPanes />
+        <MapZoomSync />
 
         <TileLayer url={defaultTileLayerUrl()} attribution={defaultAttribution()} />
 

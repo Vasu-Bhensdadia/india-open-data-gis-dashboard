@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Menu } from "lucide-react";
 
+import { SearchBar } from "@/features/search";
 import { siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -42,7 +43,11 @@ export function Header({ showMenuButton = true }: HeaderProps) {
           </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-1" aria-label="Primary navigation">
+        <div className="hidden flex-1 justify-center px-4 md:flex">
+          <SearchBar />
+        </div>
+
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Primary navigation">
           <Link
             href="/dashboard"
             className="rounded-md px-3 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-950"

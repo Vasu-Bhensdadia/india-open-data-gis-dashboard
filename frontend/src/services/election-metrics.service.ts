@@ -2,7 +2,10 @@ export interface ElectionMetrics {
   state_name: string;
   constituency_name: string;
   constituency_type: string;
+  winner_candidate?: string;
   winner_party: string;
+  runner_up_candidate?: string;
+  runner_up_party?: string;
   winner_votes: number;
   runner_up_votes: number;
   winner_margin: number;

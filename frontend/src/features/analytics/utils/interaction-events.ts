@@ -16,7 +16,8 @@ export type DashboardInteractionOrigin =
   | "filters"
   | "legend"
   | "chart"
-  | "keyboard";
+  | "keyboard"
+  | "search";
 
 export type DashboardInteractionKind = "hover" | "selection" | "idle";
 

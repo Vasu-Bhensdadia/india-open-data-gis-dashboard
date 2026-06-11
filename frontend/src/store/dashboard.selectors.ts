@@ -44,6 +44,11 @@ export const selectSelectedFeature = (state: DashboardStore) => state.selectedFe
 
 export const selectActiveRegionMetadata = (state: DashboardStore) => state.activeRegionMetadata;
 
+export const selectMapViewRequest = (state: DashboardStore) => state.mapViewRequest;
+
+/** @deprecated Use selectMapViewRequest */
+export const selectMapZoomRequest = selectMapViewRequest;
+
 // ===== Map Interaction Selectors =====
 
 export const selectMapInteraction = (state: DashboardStore) => state.mapInteraction;

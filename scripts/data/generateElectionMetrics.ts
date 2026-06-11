@@ -18,7 +18,10 @@ interface ConstituencyMetrics {
   state_name: string;
   constituency_name: string;
   constituency_type: string;
+  winner_candidate?: string;
   winner_party: string;
+  runner_up_candidate?: string;
+  runner_up_party?: string;
   winner_votes: number;
   runner_up_votes: number;
   winner_margin: number;
@@ -43,6 +46,10 @@ async function generateElectionMetrics() {
   const outputPath = path.resolve(
     __dirname,
     "../../datasets/processed/india/election_metrics.json"
+  );
+  const frontendOutputPath = path.resolve(
+    __dirname,
+    "../../frontend/public/data/election_metrics.json"
   );
 
   // Ensure output directory exists
@@ -118,7 +125,10 @@ async function generateElectionMetrics() {
       state_name: winner.geo_state_name,
       constituency_name: winner.geo_constituency_name,
       constituency_type: winner.constituency_type,
+      winner_candidate: winner.candidate_name,
       winner_party: winner.party_name,
+      runner_up_candidate: runnerUp?.candidate_name ?? "",
+      runner_up_party: runnerUp?.party_name ?? "",
       winner_votes: winnerVotes,
       runner_up_votes: runnerUpVotes,
       winner_margin: margin,
@@ -129,7 +139,9 @@ async function generateElectionMetrics() {
 
   // Write metrics to JSON
   fs.writeFileSync(outputPath, JSON.stringify(metricsIndex, null, 2), "utf-8");
+  fs.writeFileSync(frontendOutputPath, JSON.stringify(metricsIndex, null, 2), "utf-8");
   console.log(`Metrics file created: ${outputPath}`);
+  console.log(`Frontend metrics file created: ${frontendOutputPath}`);
   console.log(`Total metrics generated: ${Object.keys(metricsIndex).length}`);
 
   return metricsIndex;

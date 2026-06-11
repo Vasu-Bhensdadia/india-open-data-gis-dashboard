@@ -33,6 +33,8 @@ export type {
   TotalVotesFilter,
   WinnerVotesFilter,
   ChoroplethMode,
+  MapViewRequest,
+  MapZoomRequest,
   RangeFilter,
 } from "./dashboard.types";
 export { DEFAULT_DASHBOARD_STATE } from "./dashboard.types";
@@ -51,6 +53,8 @@ export {
   selectHoveredFeature,
   selectSelectedFeature,
   selectActiveRegionMetadata,
+  selectMapViewRequest,
+  selectMapZoomRequest,
   // Map interactions
   selectMapInteraction,
   selectMapInteractionMode,

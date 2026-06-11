@@ -34,6 +34,10 @@ function generateElectionMetrics() {
     __dirname,
     "../../datasets/processed/india/election_metrics.json"
   );
+  const frontendOutputPath = path.resolve(
+    __dirname,
+    "../../frontend/public/data/election_metrics.json"
+  );
 
   // Ensure output directory exists
   const outputDir = path.dirname(outputPath);
@@ -102,7 +106,10 @@ function generateElectionMetrics() {
       state_name: winner.geo_state_name,
       constituency_name: winner.geo_constituency_name,
       constituency_type: winner.constituency_type,
+      winner_candidate: winner.candidate_name,
       winner_party: winner.party_name,
+      runner_up_candidate: runnerUp?.candidate_name ?? "",
+      runner_up_party: runnerUp?.party_name ?? "",
       winner_votes: winnerVotes,
       runner_up_votes: runnerUpVotes,
       winner_margin: margin,
@@ -113,13 +120,17 @@ function generateElectionMetrics() {
 
   // Write metrics to JSON
   fs.writeFileSync(outputPath, JSON.stringify(metricsIndex, null, 2), "utf-8");
+  fs.writeFileSync(frontendOutputPath, JSON.stringify(metricsIndex, null, 2), "utf-8");
   console.log(`Metrics file created: ${outputPath}`);
+  console.log(`Frontend metrics file created: ${frontendOutputPath}`);
   console.log(`Total metrics generated: ${Object.keys(metricsIndex).length}`);
 
   return metricsIndex;
 }
 
-generateElectionMetrics().catch((error) => {
+try {
+  generateElectionMetrics();
+} catch (error) {
   console.error("Error generating election metrics:", error);
   process.exit(1);
-});
+}

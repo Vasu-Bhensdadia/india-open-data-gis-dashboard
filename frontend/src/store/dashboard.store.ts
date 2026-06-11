@@ -20,6 +20,7 @@ import { create } from "zustand";
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { ChoroplethMetricKey, ChoroplethMetricDescriptor } from "@/features/maps/types/choropleth";
 import type { MapRegionMetadata } from "@/features/maps/map.store";
+import type { LatLngBoundsTuple } from "@/features/maps/utils/map-bounds";
 import type {
   DashboardState,
   MapInteractionState,
@@ -244,6 +245,22 @@ export interface DashboardActions {
    * Apply all active filters (useful for analytics calculations).
    */
   applyFilters: () => void;
+
+  // ===== Map View Actions =====
+  /**
+   * Request the map to zoom to the provided bounds.
+   */
+  requestMapZoom: (bounds: LatLngBoundsTuple) => void;
+
+  /**
+   * Request the map to reset to the default country view.
+   */
+  requestMapReset: () => void;
+
+  /**
+   * Clear the pending map view request after it has been handled.
+   */
+  clearMapViewRequest: () => void;
 
   // ===== UI State Actions =====
   /**
@@ -717,6 +734,38 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
       });
     }
   },
+
+  // ===== Map View Actions =====
+  requestMapZoom: (bounds) =>
+    set((state) => ({
+      mapViewRequest: {
+        type: "bounds",
+        bounds,
+        nonce: Date.now(),
+      },
+      mapInteraction: {
+        ...state.mapInteraction,
+        mode: "zoom",
+      },
+    })),
+
+  requestMapReset: () =>
+    set((state) => ({
+      mapViewRequest: {
+        type: "reset",
+        nonce: Date.now(),
+      },
+      mapInteraction: {
+        ...state.mapInteraction,
+        mode: "zoom",
+        viewLevel: "country",
+      },
+    })),
+
+  clearMapViewRequest: () =>
+    set({
+      mapViewRequest: null,
+    }),
 
   // ===== UI State Actions =====
   toggleFilterPanel: () =>

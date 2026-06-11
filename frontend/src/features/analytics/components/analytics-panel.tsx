@@ -1,8 +1,10 @@
 "use client";
 
 import { AlertTriangle, BarChart3, Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 import { useIndiaGeoJSON } from "@/features/maps/hooks/useIndiaGeoJSON";
+import { getSelectedFeatureInfo } from "@/features/maps/utils/feature-info";
 import { useDashboardAnalytics } from "../hooks/useDashboardAnalytics";
 import { useDashboardInteractionSync } from "../hooks/useDashboardInteractionSync";
 import type { AnalyticsProvider } from "../types/analytics.types";
@@ -11,6 +13,9 @@ import { useAnalyticsCharts } from "../charts/hooks/useAnalyticsCharts";
 import { DashboardInteractionBanner } from "./dashboard-interaction-banner";
 import { DashboardKpiGrid } from "./dashboard-kpi-grid";
 import { PartySeatBreakdown } from "./party-seat-breakdown";
+import { ConstituencyProfile } from "./constituency-profile";
+import { selectSelectedFeature, useDashboardStore } from "@/store";
+import { getElectionMetrics } from "@/services/election-metrics.service";
 
 interface AnalyticsPanelProps {
   provider?: AnalyticsProvider | null;
@@ -25,6 +30,13 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
     cacheKey: "india-parliamentary-constituencies",
   });
 
+  // Get selected constituency from dashboard store
+  const selectedFeature = useDashboardStore(selectSelectedFeature);
+  const selectedFeatureInfo = useMemo(
+    () => (selectedFeature ? getSelectedFeatureInfo(selectedFeature) : null),
+    [selectedFeature],
+  );
+
   const {
     summary,
     kpiMetrics,
@@ -37,6 +49,19 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
     selectedMetric,
     selectedMetricKey,
   } = useDashboardAnalytics(data?.features ?? null, { provider });
+
+  // Get metrics for selected constituency
+  const selectedMetricsData = useMemo(() => {
+    if (!selectedFeatureInfo || !metricsIndex) {
+      return null;
+    }
+
+    return getElectionMetrics(
+      selectedFeatureInfo.stateName,
+      selectedFeatureInfo.constituencyName,
+      metricsIndex,
+    );
+  }, [selectedFeatureInfo, metricsIndex]);
 
   const {
     chartModels,
@@ -61,6 +86,10 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
   const isBusy = isFeaturesLoading || isLoading;
   const showEmptySummary = !isBusy && summary !== null && summary.totalConstituencies === 0;
   const showIdleEmptyState = !isBusy && !summary && !error && !geojsonError;
+  const constituencyProfileError =
+    selectedFeature && !isBusy && !selectedMetricsData
+      ? "Election details are still unavailable for this constituency. Try selecting another area or wait for the metrics layer to finish loading."
+      : null;
 
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
@@ -120,6 +149,16 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
         </div>
 
         <DashboardInteractionBanner event={activeEvent} loading={isBusy} />
+
+        {/* Constituency Profile - Shows detailed info when a constituency is selected */}
+        {selectedFeature && (
+          <ConstituencyProfile
+            feature={selectedFeature}
+            metrics={selectedMetricsData}
+            loading={isBusy}
+            error={constituencyProfileError}
+          />
+        )}
 
         {showIdleEmptyState ? (
           <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-5 text-sm text-zinc-600">
