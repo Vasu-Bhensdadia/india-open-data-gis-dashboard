@@ -1,3 +1,12 @@
+export interface CandidateMetrics {
+  candidate_name: string;
+  party_name: string;
+  evm_votes: number;
+  postal_votes: number;
+  total_votes: number;
+  rank: number;
+}
+
 export interface ElectionMetrics {
   state_name: string;
   constituency_name: string;
@@ -11,6 +20,7 @@ export interface ElectionMetrics {
   winner_margin: number;
   winner_margin_percentage: number;
   total_votes: number;
+  candidates?: CandidateMetrics[];
 }
 
 export interface ElectionMetricsIndex {

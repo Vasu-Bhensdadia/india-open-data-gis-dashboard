@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 
 import { SearchBar } from "@/features/search";
+import { ShareButton } from "@/features/sharing";
 import { siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -63,6 +64,7 @@ export function Header({ showMenuButton = true }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ShareButton />
           <span className="text-xs font-medium text-zinc-500">v0.1.0</span>
         </div>
       </div>

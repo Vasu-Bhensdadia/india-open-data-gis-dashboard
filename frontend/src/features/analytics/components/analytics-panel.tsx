@@ -14,6 +14,8 @@ import { DashboardInteractionBanner } from "./dashboard-interaction-banner";
 import { DashboardKpiGrid } from "./dashboard-kpi-grid";
 import { PartySeatBreakdown } from "./party-seat-breakdown";
 import { ConstituencyProfile } from "./constituency-profile";
+import { DashboardExportMenu } from "../export/components/dashboard-export-menu";
+import { useDashboardExport } from "../export/hooks/useDashboardExport";
 import { selectSelectedFeature, useDashboardStore } from "@/store";
 import { getElectionMetrics } from "@/services/election-metrics.service";
 
@@ -64,6 +66,7 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
   }, [selectedFeatureInfo, metricsIndex]);
 
   const {
+    allChartModels,
     chartModels,
     layoutMode,
     selectedChartId,
@@ -81,6 +84,19 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
   const { activeEvent } = useDashboardInteractionSync({
     metricsIndex,
     selectedMetric,
+  });
+
+  const exportState = useDashboardExport({
+    summary,
+    kpiMetrics,
+    filteredFeatures,
+    metricsIndex,
+    selectedMetric,
+    selectedMetricKey,
+    chartModels: allChartModels,
+    totalFeatureCount,
+    filteredFeatureCount,
+    isLoading: isFeaturesLoading || isLoading,
   });
 
   const isBusy = isFeaturesLoading || isLoading;
@@ -105,23 +121,27 @@ export function AnalyticsPanel({ provider }: AnalyticsPanelProps) {
             </p>
           </div>
 
-          <div className="shrink-0 text-right">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-600">
-              {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-              {isBusy
-                ? "Loading"
-                : summary?.source === "backend"
-                  ? "Backend"
-                  : summary
-                    ? "Client"
-                    : error
-                      ? "Unavailable"
-                      : "Pending"}
-            </div>
-            <div className="mt-1 text-[11px] text-zinc-500">
-              {summary
-                ? "Updated from the current filter, hover and selection state."
-                : "Waiting for dashboard data."}
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <DashboardExportMenu exportState={exportState} />
+
+            <div className="text-right">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-600">
+                {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                {isBusy
+                  ? "Loading"
+                  : summary?.source === "backend"
+                    ? "Backend"
+                    : summary
+                      ? "Client"
+                      : error
+                        ? "Unavailable"
+                        : "Pending"}
+              </div>
+              <div className="mt-1 text-[11px] text-zinc-500">
+                {summary
+                  ? "Updated from the current filter, hover and selection state."
+                  : "Waiting for dashboard data."}
+              </div>
             </div>
           </div>
         </div>

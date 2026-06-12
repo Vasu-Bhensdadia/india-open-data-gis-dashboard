@@ -145,6 +145,11 @@ export function useMapSelection<
       return;
     }
 
+    const currentId = selectedFeatureRef.current ? resolveFeatureId(selectedFeatureRef.current) : null;
+    if (controlledSelectedFeatureId === currentId) {
+      return;
+    }
+
     clearSelectedLayer();
     selectedFeatureRef.current = controlledSelectedFeature ?? null;
   }, [
@@ -152,6 +157,7 @@ export function useMapSelection<
     controlledSelectedFeature,
     controlledSelectedFeatureId,
     isControlledSelection,
+    resolveFeatureId,
   ]);
 
   const selectFeature = useCallback(

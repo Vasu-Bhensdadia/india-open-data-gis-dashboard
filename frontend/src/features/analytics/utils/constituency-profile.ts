@@ -146,7 +146,17 @@ export function formatConstituencyProfile(
 function extractConstituencyNumber(properties?: Record<string, unknown>): string | null {
   if (!properties) return null;
 
-  const numberProperties = ["PC_NUM", "pc_num", "constituency_number", "constituencyNumber"];
+  const numberProperties = [
+    "PC_NO",
+    "pc_no",
+    "PC_CODE",
+    "pc_code",
+    "PC_NUM",
+    "pc_num",
+    "constituency_number",
+    "constituency_no",
+    "constituencyNumber",
+  ];
   for (const prop of numberProperties) {
     const value = properties[prop];
     if (value !== null && value !== undefined) {
@@ -280,9 +290,30 @@ export function getPartyColor(partyName: string): string {
     TMC: "#20C646",
     "Communist Party of India (Marxist)": "#cc0000",
     "CPI(M)": "#cc0000",
+    "Bahujan Samaj Party": "#0000ff",
+    BSP: "#0000ff",
+    "Aam Aadmi Party": "#0072c6",
+    AAP: "#0072c6",
+    "Nationalist Congress Party": "#00B259",
+    NCP: "#00B259",
+    NOTA: "#9ca3af",
+    "None of the Above": "#9ca3af",
+    Independent: "#4b5563",
+    IND: "#4b5563"
   };
 
-  return partyColorMap[partyName] || "#6b7280"; // Default gray for unknown parties
+  const cleanParty = partyName.trim();
+  if (partyColorMap[cleanParty]) {
+    return partyColorMap[cleanParty];
+  }
+
+  // Generate deterministic beautiful color based on hash of partyName
+  let hash = 0;
+  for (let i = 0; i < cleanParty.length; i++) {
+    hash = cleanParty.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 75%, 45%)`;
 }
 
 /**

@@ -1,9 +1,11 @@
 "use client";
 
-import { AlertCircle, Map, TrendingUp } from "lucide-react";
+import * as React from "react";
+import { AlertCircle, Map, TrendingUp, FileText } from "lucide-react";
 import type { GeoJSONFeature } from "@/types/geojson";
 import type { ElectionMetrics } from "@/services/election-metrics.service";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   buildConstituencyProfile,
@@ -12,6 +14,8 @@ import {
   getPartyTone,
 } from "../utils/constituency-profile";
 import { ElectionSummaryCard } from "./election-summary-card";
+import { ConstituencyReportPrintPortal } from "./constituency-report";
+import { printReport } from "../utils/report-generator";
 
 /**
  * Constituency Profile Component
@@ -147,6 +151,8 @@ export function ConstituencyProfile({
   error = null,
   className,
 }: ConstituencyProfileProps) {
+
+
   // Guard: nothing selected
   if (!feature && !loading && !error) {
     return (
@@ -203,66 +209,81 @@ export function ConstituencyProfile({
   const runnerUpColor = getPartyColor(formatted.runnerUp.party);
 
   return (
-    <Card className={cn("border-slate-200 bg-white", className)}>
-      {/* Header */}
-      <CardHeader className="border-b border-slate-100 pb-4">
-        <CardDescription className="flex items-start justify-between gap-2">
-          <div className="flex-1">
+    <>
+      <Card className={cn("border-slate-200 bg-white", className)}>
+        {/* Header */}
+        <CardHeader className="border-b border-slate-100 pb-4">
+          <div className="flex items-center justify-between w-full">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Constituency Profile
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => { printReport(); }}
+              className="h-6 gap-1"
+            >
+              <FileText className="h-3 w-3" />
+              <span>Report</span>
+            </Button>
           </div>
-        </CardDescription>
-      </CardHeader>
+        </CardHeader>
 
-      {/* Content */}
-      <CardContent className="space-y-4 pt-4">
-        {/* Constituency Header */}
-        <ConstituencyHeader
-          name={formatted.constituencyName}
-          state={formatted.stateName}
-          number={formatted.constituencyNumber}
-          type={formatted.constituencyType}
-        />
-
-        {/* Winner and Runner-up Cards */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <ElectionSummaryCard
-            title="Winner"
-            candidateName={formatted.winner.candidate}
-            partyName={formatted.winner.party}
-            votes={formatted.winner.votes}
-            accentColor={winnerColor}
-            tone={winnerTone}
+        {/* Content */}
+        <CardContent className="space-y-4 pt-4">
+          {/* Constituency Header */}
+          <ConstituencyHeader
+            name={formatted.constituencyName}
+            state={formatted.stateName}
+            number={formatted.constituencyNumber}
+            type={formatted.constituencyType}
           />
 
-          <ElectionSummaryCard
-            title="Runner-up"
-            candidateName={formatted.runnerUp.candidate}
-            partyName={formatted.runnerUp.party}
-            votes={formatted.runnerUp.votes}
-            accentColor={runnerUpColor}
-            tone={runnerUpTone}
-          />
-        </div>
+          {/* Winner and Runner-up Cards */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <ElectionSummaryCard
+              title="Winner"
+              candidateName={formatted.winner.candidate}
+              partyName={formatted.winner.party}
+              votes={formatted.winner.votes}
+              accentColor={winnerColor}
+              tone={winnerTone}
+            />
 
-        {/* Key Metrics Summary */}
-        <MetricsSummary
-          margin={formatted.metrics.margin}
-          marginPercentage={formatted.metrics.marginPercentage}
-          totalVotes={formatted.metrics.totalVotes}
-        />
-
-        {/* Turnout Info */}
-        {formatted.metrics.turnout !== "N/A" && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
-              Voter Turnout
-            </p>
-            <p className="mt-2 text-lg font-bold text-slate-900">{formatted.metrics.turnout}</p>
+            <ElectionSummaryCard
+              title="Runner-up"
+              candidateName={formatted.runnerUp.candidate}
+              partyName={formatted.runnerUp.party}
+              votes={formatted.runnerUp.votes}
+              accentColor={runnerUpColor}
+              tone={runnerUpTone}
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Key Metrics Summary */}
+          <MetricsSummary
+            margin={formatted.metrics.margin}
+            marginPercentage={formatted.metrics.marginPercentage}
+            totalVotes={formatted.metrics.totalVotes}
+          />
+
+          {/* Turnout Info */}
+          {formatted.metrics.turnout !== "N/A" && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                Voter Turnout
+              </p>
+              <p className="mt-2 text-lg font-bold text-slate-900">{formatted.metrics.turnout}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
+
+      {/* Invisible Print Component in Portal */}
+      <ConstituencyReportPrintPortal metrics={metrics} feature={feature} />
+    </>
   );
 }

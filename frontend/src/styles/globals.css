@@ -267,3 +267,50 @@
   cursor: pointer;
   transition: stroke-width 160ms ease, stroke-opacity 160ms ease, color 160ms ease;
 }
+
+/* On screen, hide the printable report root */
+#printable-report-root {
+  display: none;
+}
+
+/* Print styles for Constituency Report */
+@media print {
+  /* Hide the dashboard layout and all other screen elements */
+  body > :not(#printable-report-root) {
+    display: none !important;
+  }
+
+  /* Explicitly display our printable report root */
+  #printable-report-root {
+    display: block !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Configure page margins for A4 PDF generation (ensures white space on all pages) */
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm;
+  }
+
+  /* Force modern browsers to print background colors and shapes accurately */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Helper to explicitly hide buttons/actions from PDF */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Prevent card content from being split across page breaks */
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+

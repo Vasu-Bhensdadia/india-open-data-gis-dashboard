@@ -50,6 +50,7 @@ export { DashboardInteractionBanner } from "./components/dashboard-interaction-b
 export { DashboardKpiCard } from "./components/dashboard-kpi-card";
 export { DashboardKpiGrid } from "./components/dashboard-kpi-grid";
 export { PartySeatBreakdown } from "./components/party-seat-breakdown";
+export { ConstituencyReport, ConstituencyReportPrintPortal } from "./components/constituency-report";
 
 export {
   buildConstituencyProfile,
@@ -61,3 +62,7 @@ export type {
   ConstituencyProfileData,
   FormattedConstituencyProfile,
 } from "./utils/constituency-profile";
+export { generateReportData, printReport } from "./utils/report-generator";
+export type { ConstituencyReportData } from "./utils/report-generator";
+
+export * from "./export";
